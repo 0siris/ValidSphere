@@ -27,7 +27,7 @@ public static class FloatingPointAssertions {
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<T, TPolicy> BeApproximately<T, TPolicy>(
+    public static Assertion<T, TPolicy> Approx<T, TPolicy>(
         this Assertion<T, TPolicy> assertion,
         T expected,
         T tolerance,

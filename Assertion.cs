@@ -119,13 +119,13 @@ public static class AssertionEntryExtensions {
     /// <param name="filePath">The caller source file path, supplied automatically by the compiler.</param>
     /// <param name="lineNumber">The caller source line number, supplied automatically by the compiler.</param>
     /// <returns>
-    ///     An assertion using <see cref="ShouldPolicy" />, which throws <see cref="AssertException" />
+    ///     An assertion using <see cref="IsPolicy" />, which throws <see cref="AssertException" />
     ///     when a constraint fails.
     /// </returns>
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<T, ShouldPolicy> Should<T>(
+    public static Assertion<T, IsPolicy> Is<T>(
         this T subject,
         [CallerArgumentExpression("subject")] string? expression = null,
         [CallerMemberName] string? memberName = null,
@@ -201,7 +201,7 @@ public static class AssertionEntryExtensions {
     ///     original reference to non-null after a successful call.
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<T, ShouldPolicy> AssertNotNull<T>(
+    public static Assertion<T, IsPolicy> AssertNotNull<T>(
         [NotNull] this T? subject,
         string? message = null,
         [CallerArgumentExpression("subject")] string? expression = null,
@@ -213,7 +213,7 @@ public static class AssertionEntryExtensions {
     {
         var context = new AssertionContext(expression, memberName, filePath, lineNumber);
         if (subject is null)
-            ShouldPolicy.FailNull(context, message ?? "Value must not be null");
+            IsPolicy.FailNull(context, message ?? "Value must not be null");
 
         return new(subject, context);
     }
@@ -251,7 +251,7 @@ public static class AssertionEntryExtensions {
     /// </exception>
     [DebuggerStepThrough]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<T, ShouldPolicy> AssertNotNull<T>(
+    public static Assertion<T, IsPolicy> AssertNotNull<T>(
         [NotNull] this T? subject,
         string? message = null,
         [CallerArgumentExpression("subject")] string? expression = null,
@@ -267,7 +267,7 @@ public static class AssertionEntryExtensions {
                                            lineNumber);
 
         if (!subject.HasValue)
-            ShouldPolicy.FailNull(
+            IsPolicy.FailNull(
                                   context,
                                   message ?? "Value must have a value.");
 

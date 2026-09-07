@@ -21,7 +21,7 @@ public static class CollectionAssertions {
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<TCollection, TPolicy> NotBeEmpty<TCollection, TPolicy>(
+    public static Assertion<TCollection, TPolicy> NotEmpty<TCollection, TPolicy>(
         this Assertion<TCollection, TPolicy> assertion,
         string? message = null
     )
@@ -47,7 +47,7 @@ public static class CollectionAssertions {
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<TCollection, TPolicy> HaveCount<TCollection, TPolicy>(
+    public static Assertion<TCollection, TPolicy> Count<TCollection, TPolicy>(
         this Assertion<TCollection, TPolicy> assertion,
         int expected,
         string? message = null
@@ -78,7 +78,7 @@ public static class CollectionAssertions {
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<T[], TPolicy> HaveLength<T, TPolicy>(
+    public static Assertion<T[], TPolicy> Length<T, TPolicy>(
         this Assertion<T[], TPolicy> assertion,
         int expected,
         string? message = null

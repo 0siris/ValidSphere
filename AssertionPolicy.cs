@@ -46,7 +46,7 @@ public interface IAssertionPolicy {
 /// <remarks>
 ///     Failed assertions are reported as <see cref="AssertException" /> instances.
 /// </remarks>
-public readonly struct ShouldPolicy : IAssertionPolicy {
+public readonly struct IsPolicy : IAssertionPolicy {
     /// <inheritdoc />
     [DoesNotReturn]
     [DebuggerStepThrough]

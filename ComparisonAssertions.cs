@@ -22,7 +22,7 @@ public static class ComparisonAssertions {
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<T, TPolicy> BeGreaterThan<T, TPolicy>(
+    public static Assertion<T, TPolicy> Greater<T, TPolicy>(
         this Assertion<T, TPolicy> assertion,
         T expected,
         string? message = null
@@ -52,7 +52,7 @@ public static class ComparisonAssertions {
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<T, TPolicy> BeGreaterThanOrEqualTo<T, TPolicy>(
+    public static Assertion<T, TPolicy> GreaterEq<T, TPolicy>(
         this Assertion<T, TPolicy> assertion,
         T expected,
         string? message = null
@@ -82,7 +82,7 @@ public static class ComparisonAssertions {
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<T, TPolicy> BeLessThan<T, TPolicy>(
+    public static Assertion<T, TPolicy> Less<T, TPolicy>(
         this Assertion<T, TPolicy> assertion,
         T expected,
         string? message = null
@@ -112,7 +112,7 @@ public static class ComparisonAssertions {
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<T, TPolicy> BeLessThanOrEqualTo<T, TPolicy>(
+    public static Assertion<T, TPolicy> LessEq<T, TPolicy>(
         this Assertion<T, TPolicy> assertion,
         T expected,
         string? message = null
@@ -144,7 +144,7 @@ public static class ComparisonAssertions {
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<T, TPolicy> BeInRange<T, TPolicy>(
+    public static Assertion<T, TPolicy> Range<T, TPolicy>(
         this Assertion<T, TPolicy> assertion,
         T minimum,
         T maximum,

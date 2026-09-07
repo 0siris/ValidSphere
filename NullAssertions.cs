@@ -21,7 +21,7 @@ public static class NullAssertions {
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<T, TPolicy> NotBeNull<T, TPolicy>(
+    public static Assertion<T, TPolicy> NotNull<T, TPolicy>(
         this Assertion<T?, TPolicy> assertion,
         string? message = null
     )
@@ -49,7 +49,7 @@ public static class NullAssertions {
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<T, TPolicy> NotBeNull<T, TPolicy>(
+    public static Assertion<T, TPolicy> NotNull<T, TPolicy>(
         this Assertion<T?, TPolicy> assertion,
         string? message = null
     )
@@ -76,7 +76,7 @@ public static class NullAssertions {
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<T?, TPolicy> BeNull<T, TPolicy>(
+    public static Assertion<T?, TPolicy> Null<T, TPolicy>(
         this Assertion<T?, TPolicy> assertion,
         string? message = null
     )
@@ -101,7 +101,7 @@ public static class NullAssertions {
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<T?, TPolicy> BeNull<T, TPolicy>(
+    public static Assertion<T?, TPolicy> Null<T, TPolicy>(
         this Assertion<T?, TPolicy> assertion,
         string? message = null
     )

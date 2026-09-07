@@ -19,7 +19,7 @@ public static class StringAssertions {
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<string, TPolicy> NotBeNullOrEmpty<TPolicy>(
+    public static Assertion<string, TPolicy> NotNullOrEmpty<TPolicy>(
         this Assertion<string?, TPolicy> assertion,
         string? message = null
     )
@@ -48,7 +48,7 @@ public static class StringAssertions {
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<string, TPolicy> NotBeNullOrWhiteSpace<TPolicy>(
+    public static Assertion<string, TPolicy> NotNullOrWhiteSpace<TPolicy>(
         this Assertion<string?, TPolicy> assertion,
         string? message = null
     )
@@ -76,7 +76,7 @@ public static class StringAssertions {
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<string, TPolicy> NotBeEmpty<TPolicy>(
+    public static Assertion<string, TPolicy> NotEmpty<TPolicy>(
         this Assertion<string, TPolicy> assertion,
         string? message = null
     )

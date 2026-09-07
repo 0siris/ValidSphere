@@ -25,7 +25,7 @@ public static class CoreAssertions {
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<T, TPolicy> Be<T, TPolicy>(
+    public static Assertion<T, TPolicy> Eq<T, TPolicy>(
         this Assertion<T, TPolicy> assertion,
         T expected,
         string? message = null
@@ -53,7 +53,7 @@ public static class CoreAssertions {
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<T, TPolicy> NotBe<T, TPolicy>(
+    public static Assertion<T, TPolicy> NotEq<T, TPolicy>(
         this Assertion<T, TPolicy> assertion,
         T unexpected,
         string? message = null
@@ -67,50 +67,46 @@ public static class CoreAssertions {
         return assertion;
     }
 
-    /// <summary>
-    ///     Asserts that the Boolean subject is <see langword="true" />.
-    /// </summary>
-    /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
     /// <param name="assertion">The current assertion.</param>
-    /// <param name="message">
-    ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
-    /// </param>
-    /// <returns>The original assertion for further chaining or implicit value extraction.</returns>
-    [DebuggerStepThrough]
-    [StackTraceHidden]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<bool, TPolicy> BeTrue<TPolicy>(
-        this Assertion<bool, TPolicy> assertion,
-        string? message = null
-    )
-        where TPolicy : struct, IAssertionPolicy {
-        if (!assertion.Value)
-            TPolicy.Fail(assertion.Context, message ?? "Expected value to be true.");
-
-        return assertion;
-    }
-
-    /// <summary>
-    ///     Asserts that the Boolean subject is <see langword="false" />.
-    /// </summary>
     /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
-    /// <param name="assertion">The current assertion.</param>
-    /// <param name="message">
-    ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
-    /// </param>
-    /// <returns>The original assertion for further chaining or implicit value extraction.</returns>
-    [DebuggerStepThrough]
-    [StackTraceHidden]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<bool, TPolicy> BeFalse<TPolicy>(
-        this Assertion<bool, TPolicy> assertion,
-        string? message = null
-    )
-        where TPolicy : struct, IAssertionPolicy {
-        if (assertion.Value)
-            TPolicy.Fail(assertion.Context, message ?? "Expected value to be false.");
+    extension<TPolicy>(Assertion<bool, TPolicy> assertion) where TPolicy : struct, IAssertionPolicy {
+        /// <summary>
+        ///     Asserts that the Boolean subject is <see langword="true" />.
+        /// </summary>
+        /// <param name="message">
+        ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
+        /// </param>
+        /// <returns>The original assertion for further chaining or implicit value extraction.</returns>
+        [DebuggerStepThrough]
+        [StackTraceHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Assertion<bool, TPolicy> True(
+            string? message = null
+        ) {
+            if (!assertion.Value)
+                TPolicy.Fail(assertion.Context, message ?? "Expected value to be true.");
 
-        return assertion;
+            return assertion;
+        }
+
+        /// <summary>
+        ///     Asserts that the Boolean subject is <see langword="false" />.
+        /// </summary>
+        /// <param name="message">
+        ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
+        /// </param>
+        /// <returns>The original assertion for further chaining or implicit value extraction.</returns>
+        [DebuggerStepThrough]
+        [StackTraceHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Assertion<bool, TPolicy> False(
+            string? message = null
+        ) {
+            if (assertion.Value)
+                TPolicy.Fail(assertion.Context, message ?? "Expected value to be false.");
+
+            return assertion;
+        }
     }
 
     /// <summary>

@@ -1,19 +1,19 @@
 # Assertions
 
-A lightweight, extensible assertion and guard library for .NET 11.
+A lightweight, extensible assertion and guard library for modern .NET.
 
 `Assertions` provides a small fluent API for validating runtime invariants, method arguments, preconditions, and values without introducing a large assertion framework.
 
 The same assertion extensions can be used with different **failure policies**:
 
 ```csharp
-value.Should().Be(expected);
-value.Guard().Be(expected);
+value.Is().Eq(expected);
+value.Guard().Eq(expected);
 ```
 
 The assertion logic stays the same. Only the failure behavior changes:
 
-- `Should()` represents a runtime assertion and throws `AssertException`.
+- `Is()` represents a runtime assertion and throws `AssertException`.
 - `Guard()` represents argument or precondition validation and throws standard .NET argument exceptions.
 
 This keeps validation rules reusable while preserving the correct failure semantics for each call site.
@@ -26,7 +26,7 @@ The library is designed around a few principles:
 
 - **Small API surface**
 - **Fluent but lightweight syntax**
-- **No heap allocation on the successful assertion path**
+- **No heap allocation introduced by the core assertion wrapper on the successful path**
 - **No reflection**
 - **No stack walking for caller information**
 - **No virtual dispatch for assertion policies**
@@ -43,15 +43,15 @@ The core assertion object is a `readonly struct`, while policies use static abst
 ```text
 value
   │
-  ├── Should()
-  │      └── ShouldPolicy
-  │             └── AssertException
+  ├── Is()
+  │     └── IsPolicy
+  │            └── AssertException
   │
   └── Guard()
-         └── GuardPolicy
-                ├── ArgumentException
-                ├── ArgumentNullException
-                └── ArgumentOutOfRangeException
+        └── GuardPolicy
+               ├── ArgumentException
+               ├── ArgumentNullException
+               └── ArgumentOutOfRangeException
 ```
 
 ---
@@ -78,23 +78,23 @@ using Assertions;
 
 ## Basic Usage
 
-### Runtime assertions with `Should()`
+### Runtime assertions with `Is()`
 
-Use `Should()` when a failed condition represents an invalid program state, violated invariant, unexpected result, or failed assertion.
+Use `Is()` when a failed condition represents an invalid program state, violated invariant, unexpected result, or failed test assertion.
 
 ```csharp
 var count = 5;
 
-count.Should().Be(5);
-count.Should().BeGreaterThan(0);
+count.Is().Eq(5);
+count.Is().Greater(0);
 ```
 
-A failed `Should()` assertion throws `AssertException`.
+A failed `Is()` assertion throws `AssertException`.
 
 ```csharp
 var count = 3;
 
-count.Should().Be(5);
+count.Is().Eq(5);
 ```
 
 A failure contains the assertion message together with compiler-captured source information, for example:
@@ -111,7 +111,7 @@ The original source expression is captured with `CallerArgumentExpression`.
 This also works for expressions:
 
 ```csharp
-items.Count.Should().BeGreaterThan(0);
+items.Count.Is().Greater(0);
 ```
 
 The assertion context can therefore contain:
@@ -131,24 +131,24 @@ Use `Guard()` for method arguments and preconditions.
 ```csharp
 public void SetRetryCount(int retryCount)
 {
-    retryCount.Guard().BeInRange(0, 10);
+    retryCount.Guard().Range(0, 10);
 
     // ...
 }
 ```
 
-The important difference from `Should()` is the exception type.
+The important difference from `Is()` is the exception type.
 
 For example:
 
 ```csharp
-name.Guard().NotBeNull();
+name.Guard().NotNull();
 ```
 
 throws `ArgumentNullException`, while:
 
 ```csharp
-count.Guard().BeGreaterThan(0);
+count.Guard().Greater(0);
 ```
 
 throws `ArgumentOutOfRangeException`.
@@ -158,35 +158,35 @@ Other guard failures use `ArgumentException`.
 The captured subject expression is used as the parameter name where possible, so:
 
 ```csharp
-retryCount.Guard().BeGreaterThan(0);
+retryCount.Guard().Greater(0);
 ```
 
-can produce an exception with:
+can produce an exception whose `ParamName` is:
 
 ```text
-ParamName: retryCount
+retryCount
 ```
 
-This allows public APIs to use fluent assertions while still following normal .NET argument-exception conventions.
+This allows public APIs to use the fluent assertion syntax while still following normal .NET argument-exception conventions.
 
-If the guarded nullable reference is used again after the check and should participate in C# nullable flow analysis, prefer `GuardNotNull()` as described in [Flow-analysis-aware null checks](#flow-analysis-aware-null-checks).
+If a nullable variable should also be recognized as non-null by C# nullable flow analysis after the call, use `GuardNotNull()` as described below.
 
 ---
 
-## `Should()` vs. `Guard()`
+## `Is()` vs. `Guard()`
 
 Both entry points use the same assertion extensions.
 
 ```csharp
-value.Should().BeGreaterThan(0);
-value.Guard().BeGreaterThan(0);
+value.Is().Greater(0);
+value.Guard().Greater(0);
 ```
 
 The difference is the selected policy.
 
 | Entry point | Intended use | Failure |
 | --- | --- | --- |
-| `Should()` | Runtime assertions and invariants | `AssertException` |
+| `Is()` | Runtime assertions, invariants, test assertions | `AssertException` |
 | `Guard()` | Arguments and preconditions | Standard .NET argument exceptions |
 
 For example:
@@ -195,7 +195,7 @@ For example:
 public Mesh Process(Mesh? mesh, float tolerance)
 {
     mesh.GuardNotNull();
-    tolerance.Guard().BeGreaterThan(0);
+    tolerance.Guard().Greater(0);
 
     var result = ProcessInternal(mesh, tolerance);
 
@@ -207,42 +207,41 @@ public Mesh Process(Mesh? mesh, float tolerance)
 
 `Guard()` and `GuardNotNull()` validate the caller contract.
 
-`Should()` and `AssertNotNull()` validate assumptions and invariants made by the implementation.
-
-For null checks, prefer `GuardNotNull()` or `AssertNotNull()` when the original variable is used afterwards and should be refined by nullable flow analysis. Use the fluent `.NotBeNull()` form when the refined assertion value is consumed directly or when the check is part of a fluent chain.
+`Is()` and `AssertNotNull()` validate assumptions and invariants made by the implementation.
 
 ---
 
 ## Chaining Assertions
 
-Assertion methods return an assertion object again, so checks can be chained directly.
+Assertion methods return the assertion object again, so checks can be chained directly.
 
 ```csharp
-value.Should()
-     .BeGreaterThan(0)
-     .BeLessThan(100);
+value.Is()
+     .Greater(0)
+     .Less(100)
+     .NotEq(42);
 ```
 
 For strings:
 
 ```csharp
-name.Should()
-    .NotBeNullOrWhiteSpace()
-    .NotBeEmpty();
+name.Is()
+    .NotNullOrWhiteSpace()
+    .NotEmpty();
 ```
 
-The policy and original `AssertionContext` are retained for the complete chain.
+The selected policy and the original `AssertionContext` are retained for the complete chain.
 
 Conceptually:
 
 ```text
-value.Should()
-     │
-     └── Assertion<int, ShouldPolicy>
-              │
-              ├── BeGreaterThan(0)
-              │
-              └── BeLessThan(100)
+value.Is()
+    │
+    └── Assertion<int, IsPolicy>
+             │
+             ├── Greater(0)
+             ├── Less(100)
+             └── NotEq(42)
 ```
 
 No `And` property is required because every assertion directly returns an assertion that can be continued.
@@ -253,39 +252,48 @@ No `And` property is required because every assertion directly returns an assert
 
 `Assertion<T, TPolicy>` exposes the asserted value through `Value` and can also be converted implicitly back to `T`.
 
-This allows assertions to be used inline.
+This allows assertions to be embedded directly into expressions:
 
 ```csharp
-var count = input.Guard().BeGreaterThan(0).Value;
+var count = input.Guard().Greater(0).Value;
 ```
 
-or directly:
+or:
 
 ```csharp
-Process(input.Guard().BeGreaterThan(0));
+Process(input.Guard().Greater(0));
 ```
 
-For nullable references there are two useful patterns.
-
-When the validated value is consumed directly, the fluent form works well:
+Type-refining assertions can also be consumed inline:
 
 ```csharp
-var result = Process(input.Guard().NotBeNull());
+string? name = GetName();
+
+Process(name.Guard().NotNull());
 ```
 
-When the original variable is used afterwards, use the flow-analysis-aware entry point:
+When the original nullable variable is used again afterwards, prefer the flow-analysis-aware direct entry point:
 
 ```csharp
-input.GuardNotNull();
+string? name = GetName();
 
-var result = Process(input);
+name.GuardNotNull();
+
+Process(name); // no nullable warning
 ```
 
-`Guard().NotBeNull()` refines the returned assertion type.
+The two forms therefore solve slightly different problems:
 
-`GuardNotNull()` additionally refines the nullable state of the original variable.
+```text
+Guard().NotNull()
+    → refines the returned Assertion<T, TPolicy>
 
-The same distinction applies to `Should().NotBeNull()` and `AssertNotNull()`.
+GuardNotNull()
+    → refines the returned assertion
+    → also informs nullable flow analysis about the original variable
+```
+
+The same principle applies to `AssertNotNull()`.
 
 ---
 
@@ -293,9 +301,11 @@ The same distinction applies to `Should().NotBeNull()` and `AssertNotNull()`.
 
 ### Equality
 
+Use `Eq()` and `NotEq()` for value equality:
+
 ```csharp
-value.Should().Be(expected);
-value.Should().NotBe(unexpected);
+value.Is().Eq(expected);
+value.Is().NotEq(unexpected);
 ```
 
 Equality uses:
@@ -304,51 +314,107 @@ Equality uses:
 EqualityComparer<T>.Default
 ```
 
-Reference identity should be represented by a dedicated assertion rather than by changing `Be()` semantics.
+The same extensions work as guards:
+
+```csharp
+mode.Guard().NotEq(Mode.Invalid);
+```
 
 ### Boolean values
 
+Boolean assertions use the shortened `True()` and `False()` members:
+
 ```csharp
-isValid.Should().BeTrue();
-hasErrors.Should().BeFalse();
+isValid.Is().True();
+hasErrors.Is().False();
+```
+
+They also work with `Guard()`:
+
+```csharp
+isSupported.Guard().True("The requested operation is not supported.");
 ```
 
 ### Arbitrary conditions
 
-`Satisfy()` can be used when no specialized assertion exists.
+`Satisfy()` has two overloads.
+
+#### Already evaluated condition
+
+Use the Boolean overload for an arbitrary condition that is already available at the call site:
 
 ```csharp
-value.Should().Satisfy(value > minimum);
+facet.Is().Satisfy(
+    facet.loops.Count == 0 ||
+    facet.loops[^1] <= facet.outputVertexNos.Count);
 ```
 
-The condition expression is captured by the compiler:
-
-```csharp
-result.Should().Satisfy(result.Count == expectedCount);
-```
-
-A failed assertion can therefore include:
+The condition expression is captured by the compiler through `CallerArgumentExpression`, so a failure can report the original expression.
 
 ```text
-Condition 'result.Count == expectedCount' was not satisfied.
+Condition 'facet.loops.Count == 0 || facet.loops[^1] <= facet.outputVertexNos.Count' was not satisfied.
 ```
 
-For commonly used conditions, prefer a dedicated extension over `Satisfy()` because it communicates intent more clearly and can provide a better failure message.
+This overload does not require a delegate.
+
+#### Predicate over the current subject
+
+Use the predicate overload when the condition conceptually belongs to the current subject or should participate naturally in a fluent chain:
+
+```csharp
+facet.Is().Satisfy(
+    static f => f.loops.Count == 0 ||
+                f.loops[^1] <= f.outputVertexNos.Count);
+```
+
+This becomes especially useful after type or null refinement:
+
+```csharp
+string? text = GetText();
+
+text.Is()
+    .NotNull()
+    .Satisfy(static value => value.Length >= 4);
+```
+
+After `NotNull()`, the predicate receives a non-null `string`.
+
+For predicates that do not need external state, prefer a `static` lambda:
+
+```csharp
+value.Is().Satisfy(static x => x > 0);
+```
+
+A capturing lambda can allocate a closure:
+
+```csharp
+value.Is().Satisfy(x => x > minimum);
+```
+
+If the condition can be written directly without losing clarity, the Boolean overload avoids that delegate/closure concern:
+
+```csharp
+value.Is().Satisfy(value > minimum);
+```
+
+For frequently reused rules, prefer a dedicated assertion extension over `Satisfy()`.
 
 ---
 
 ## Nullability
 
-### Reference types
+### Fluent null assertions
+
+Reference types can be checked with `NotNull()` and `Null()`:
 
 ```csharp
 string? value = GetValue();
 
-value.Should().NotBeNull();
-value.Should().BeNull();
+value.Is().NotNull();
+value.Is().Null();
 ```
 
-`NotBeNull()` refines:
+`NotNull()` refines:
 
 ```csharp
 Assertion<string?, TPolicy>
@@ -360,101 +426,102 @@ to:
 Assertion<string, TPolicy>
 ```
 
-so subsequent extensions operate on the non-null type.
+so subsequent extensions operate on the non-null type:
 
 ```csharp
-value.Should()
-     .NotBeNull()
-     .NotBeEmpty();
+value.Is()
+     .NotNull()
+     .NotEmpty();
 ```
+
+Nullable value types work the same way:
+
+```csharp
+int? value = GetValue();
+
+value.Is()
+     .NotNull()
+     .Greater(0);
+```
+
+After `NotNull()`, the assertion contains an `int` rather than `int?`.
 
 ### Flow-analysis-aware null checks
 
-For reference types, the library additionally provides two direct null-check entry points:
+In addition to the fluent null assertion, the library provides two direct null-check entry points:
 
 ```csharp
 value.AssertNotNull();
 value.GuardNotNull();
 ```
 
-These methods have the same runtime null-check semantics as:
+Both exist for nullable reference types and nullable value types.
+
+These direct methods additionally annotate the input with `[NotNull]`. This allows C# nullable flow analysis to understand that the original variable is non-null after a successful call.
+
+For a reference type:
 
 ```csharp
-value.Should().NotBeNull();
-value.Guard().NotBeNull();
+Customer? customer = GetCustomer();
+
+customer.GuardNotNull();
+
+Handle(customer); // customer is known to be non-null
 ```
 
-but additionally annotate the input with `[NotNull]`.
-
-This allows C# nullable flow analysis to understand that the **original variable** is non-null after the method returns successfully.
+For a nullable value type:
 
 ```csharp
-string? value = GetValue();
+int? count = GetCount();
 
-value.GuardNotNull();
+count.GuardNotNull();
 
-Console.WriteLine(value.Length); // no nullable warning
+var value = count.Value;
 ```
 
-With the purely fluent form:
+The direct methods differ only in failure semantics:
+
+| Entry point | Intended use | Failure |
+| --- | --- | --- |
+| `AssertNotNull()` | Runtime assertion / invariant | `AssertException` |
+| `GuardNotNull()` | Argument / precondition | `ArgumentNullException` |
+
+Both still return an `Assertion<T, TPolicy>`, so they can start a fluent chain:
 
 ```csharp
-string? value = GetValue();
+string? name = GetName();
 
-value.Guard().NotBeNull();
+name.GuardNotNull()
+    .NotEmpty();
 ```
 
-only the returned `Assertion<string, GuardPolicy>` is refined. The compiler cannot infer from that fluent chain that the original variable `value` is non-null afterwards.
-
-The two direct entry points use the same failure semantics as their corresponding policies:
-
-```text
-AssertNotNull()  → runtime invariant      → AssertException
-GuardNotNull()   → argument/precondition  → ArgumentNullException
-```
-
-Both methods still return `Assertion<T, TPolicy>`, so they can be used inline or as the beginning of a fluent chain:
+They can also be used directly inside expressions:
 
 ```csharp
-Process(value.GuardNotNull());
-
-value.AssertNotNull()
-     .NotBeEmpty();
+Process(name.GuardNotNull());
 ```
 
-Use the direct methods when the nullable state of the original variable matters after the check.
+Use the direct variants when the nullable state of the **original variable** matters after the call.
 
-### Nullable value types
-
-Nullable value types can be refined through the fluent API:
-
-```csharp
-int? value = GetValue();
-
-value.Should()
-     .NotBeNull()
-     .BeGreaterThan(0);
-```
-
-After `NotBeNull()`, the assertion contains an `int` rather than `int?`.
+Use the fluent `Is().NotNull()` or `Guard().NotNull()` form when the refined assertion value is consumed directly or when the null check is naturally part of a chain.
 
 ---
 
 ## Numeric Comparisons
 
-The library uses generic math where possible.
+Comparison assertions use generic math operator interfaces.
 
 ```csharp
-value.Should().BeGreaterThan(10);
-value.Should().BeGreaterThanOrEqualTo(10);
-value.Should().BeLessThan(100);
-value.Should().BeLessThanOrEqualTo(100);
+value.Is().Greater(10);
+value.Is().GreaterEq(10);
+value.Is().Less(100);
+value.Is().LessEq(100);
 ```
 
 Ranges are inclusive:
 
 ```csharp
-value.Should().BeInRange(0, 100);
+value.Is().Range(0, 100);
 ```
 
 Equivalent condition:
@@ -466,23 +533,23 @@ Equivalent condition:
 The same assertions can be used as guards:
 
 ```csharp
-percentage.Guard().BeInRange(0, 100);
+percentage.Guard().Range(0, 100);
 ```
 
-A failed range guard produces `ArgumentOutOfRangeException`.
+A failed comparison or range guard results in an `ArgumentOutOfRangeException`.
 
 ---
 
 ## Floating-Point Assertions
 
-Floating-point values should normally not be compared using exact equality when rounding error is expected.
+Floating-point values should often be compared using a tolerance rather than exact equality.
 
-Use `BeApproximately()` instead:
+Use `Approx()`:
 
 ```csharp
 double result = Calculate();
 
-result.Should().BeApproximately(
+result.Is().Approx(
     expected: 10.0,
     tolerance: 0.0001);
 ```
@@ -497,11 +564,11 @@ Example:
 
 ```csharp
 0.30000000000000004
-    .Should()
-    .BeApproximately(0.3, 1e-12);
+    .Is()
+    .Approx(0.3, 1e-12);
 ```
 
-Negative or `NaN` tolerances are invalid and result in `ArgumentOutOfRangeException`.
+Negative or `NaN` tolerances are invalid and result in an `ArgumentOutOfRangeException`.
 
 ---
 
@@ -512,21 +579,23 @@ Check for null or empty:
 ```csharp
 string? name = GetName();
 
-name.Should().NotBeNullOrEmpty();
+name.Is().NotNullOrEmpty();
 ```
 
 Check for null, empty, or whitespace:
 
 ```csharp
-name.Should().NotBeNullOrWhiteSpace();
+name.Is().NotNullOrWhiteSpace();
 ```
 
-After these checks, the returned assertion contains a non-null `string`.
+After either check, the returned assertion contains a non-null `string`.
+
+This allows further chaining:
 
 ```csharp
-name.Should()
-    .NotBeNullOrWhiteSpace()
-    .NotBeEmpty();
+name.Is()
+    .NotNullOrWhiteSpace()
+    .NotEmpty();
 ```
 
 For argument validation:
@@ -535,17 +604,22 @@ For argument validation:
 public User(string? name)
 {
     Name = name.Guard()
-               .NotBeNullOrWhiteSpace();
+               .NotNullOrWhiteSpace();
 }
 ```
 
-If the original variable must be recognized as non-null afterwards, use `GuardNotNull()` first.
+If the original `name` variable must also be considered non-null afterwards, use `GuardNotNull()` first:
+
+```csharp
+name.GuardNotNull()
+    .NotEmpty();
+```
 
 ---
 
 ## GUIDs
 
-Require a non-empty GUID:
+The current GUID-specific API uses `NotBeEmpty()`:
 
 ```csharp
 id.Guard().NotBeEmpty();
@@ -556,10 +630,10 @@ For nullable GUIDs:
 ```csharp
 Guid? id = GetId();
 
-id.Should().NotBeNullOrEmpty();
+id.Is().NotBeNullOrEmpty();
 ```
 
-The result is refined to:
+The nullable form refines the assertion to:
 
 ```csharp
 Assertion<Guid, TPolicy>
@@ -572,54 +646,54 @@ Assertion<Guid, TPolicy>
 Require at least one element:
 
 ```csharp
-items.Should().NotBeEmpty();
+items.Is().NotEmpty();
 ```
 
 Require an exact count:
 
 ```csharp
-items.Should().HaveCount(3);
+items.Is().HaveCount(3);
 ```
 
 Arrays additionally support exact length checks:
 
 ```csharp
-buffer.Should().HaveLength(1024);
+buffer.Is().HaveLength(1024);
 ```
 
-The collection assertions intentionally operate on collection types that expose a count directly. They do not implicitly enumerate arbitrary `IEnumerable<T>` sequences just to obtain a count.
+The built-in collection assertions operate on `ICollection` or arrays and use `Count`/`Length` directly.
 
 ---
 
 ## Runtime Type Assertions
 
-Runtime type checks can refine the assertion type.
+Runtime type checks can refine the assertion type through `BeOfType<T>()`.
 
 ```csharp
 object value = GetValue();
 
-value.Should().BeOfType<MyType>();
+value.Is().BeOfType<MyType>();
 ```
 
-After the check, the assertion contains `MyType` rather than `object`.
+After the check, the returned assertion contains `MyType` rather than `object`.
 
-This allows further type-specific assertions without a separate cast:
+This allows type-specific assertions without an explicit cast:
 
 ```csharp
-value.Should()
+value.Is()
      .BeOfType<MyType>()
-     .BeValid();
+     .Satisfy(static typed => typed.IsValid);
 ```
 
-The refined assertion preserves the original `AssertionContext`.
+The original `AssertionContext` is preserved during the refinement.
 
 ---
 
-## Failure Messages
+## Optional Failure Messages
 
-Every assertion provides a meaningful default failure message and accepts an optional custom message.
+Assertions provide meaningful default failure messages, but each assertion also accepts an optional custom message.
 
-Typical default messages are:
+Typical default messages include:
 
 ```text
 Expected '10', but found '5'.
@@ -637,15 +711,22 @@ String must not be null.
 Expected count '3', but found '2'.
 ```
 
-A custom message can add domain-specific context:
+A custom message can provide domain-specific context:
 
 ```csharp
-count.Should().BeGreaterThan(
+count.Is().Greater(
     0,
     "A mesh must contain at least one vertex.");
 ```
 
-When a custom message is supplied, it replaces the assertion-specific default message. The captured caller information is still appended by the selected failure policy.
+or for a guard:
+
+```csharp
+retryCount.Guard().Range(
+    0,
+    10,
+    "Retry count is outside the supported range.");
+```
 
 Prefer messages that explain **why the invariant exists**, rather than merely restating the assertion.
 
@@ -665,79 +746,85 @@ The latter information is already represented by the assertion itself.
 
 ### Performance note for custom messages
 
-A string literal does not introduce a per-call string allocation:
+A string literal does not require building a new message on every call:
 
 ```csharp
-count.Guard().BeGreaterThan(0, "Count must be positive.");
+value.Is().Greater(0, "Value must be positive.");
 ```
 
-However, an interpolated string is evaluated before the assertion method is called:
+However, a caller-side interpolated message is evaluated before the assertion method is entered:
 
 ```csharp
-count.Guard().BeGreaterThan(0, $"Invalid count {count} for {id}.");
+value.Is().Greater(
+    0,
+    $"Value {value} for item {itemId} must be positive.");
 ```
 
-If dynamic custom messages are used in very hot paths, keep in mind that this can allocate even when the assertion succeeds unless a dedicated interpolated-string-handler overload is provided.
+That message may therefore allocate even when the assertion succeeds.
+
+The built-in default diagnostic strings are created only in the failure branch.
 
 ---
 
 ## Caller Information and Debugging
 
-`Should()`, `Guard()`, `AssertNotNull()`, and `GuardNotNull()` capture compiler-provided call-site information:
+`Is()`, `Guard()`, `AssertNotNull()`, and `GuardNotNull()` capture source information automatically.
 
-- `CallerArgumentExpression`
-- `CallerMemberName`
-- `CallerFilePath`
-- `CallerLineNumber`
+The captured `AssertionContext` contains:
 
-The values are stored in an `AssertionContext` and preserved throughout a fluent chain.
+```text
+Expression
+MemberName
+FilePath
+LineNumber
+```
+
+A failure can therefore include diagnostics such as:
 
 ```text
 Expression: mesh.Vertices.Count
 Member: ProcessMesh
-Source: C:\Projects\Example\MeshProcessor.cs(142)
+Source: C:\Projects\App\MeshProcessor.cs(142)
 ```
 
-Caller information is inserted by the compiler. Capturing it does not require:
+Caller information is provided by compiler attributes:
 
-- reflection
-- stack walking
-- source-code parsing
-- file I/O
+```csharp
+CallerArgumentExpression
+CallerMemberName
+CallerFilePath
+CallerLineNumber
+```
 
-The library also uses debugger/runtime attributes where appropriate:
+This does not require reflection, stack walking, or source-code parsing.
+
+The assertion implementation also uses debugger/runtime attributes such as:
 
 ```csharp
 [DebuggerStepThrough]
 [StackTraceHidden]
 [DoesNotReturn]
+[MethodImpl(MethodImplOptions.AggressiveInlining)]
+[MethodImpl(MethodImplOptions.NoInlining)]
 ```
 
-`DebuggerStepThrough` keeps normal debugger stepping out of assertion infrastructure.
+The intended split is:
 
-`StackTraceHidden` hides internal assertion frames from normal formatted stack traces where appropriate.
+```text
+successful / hot path
+    → small assertion methods
+    → aggressive inlining
+    → debugger steps through infrastructure
 
-`DoesNotReturn` communicates failure-path control flow to the compiler and analyzers.
-
-The failure policy methods are marked `NoInlining` so the exception construction and diagnostic formatting stay on the cold path, while the small assertion methods are intended to remain inline-friendly.
-
-> `CallerFilePath` can contain an absolute build-machine path. If exceptions are exposed outside trusted diagnostics, consider whether that information should be sanitized by the selected policy.
+failure / cold path
+    → policy failure methods
+    → no inlining
+    → internal frames hidden from formatted stack traces
+```
 
 ---
 
 ## Test Framework Integration
-
-`Should()` can also be used inside unit tests.
-
-```csharp
-[Fact]
-public void Calculates_expected_value()
-{
-    var result = Calculate();
-
-    result.Should().Be(42);
-}
-```
 
 `AssertException` implements the marker interface:
 
@@ -745,23 +832,33 @@ public void Calculates_expected_value()
 IAssertionException
 ```
 
-The marker is intentionally declared by this library rather than requiring a direct dependency on a particular test framework. Frameworks that recognize an interface with that name, such as xUnit.net v3, can classify the exception as an assertion failure.
+The interface intentionally has no members.
 
-`Guard()` remains intentionally different:
+This allows compatible test frameworks such as xUnit.net v3 to recognize `AssertException` as an assertion failure without requiring the core library to reference xUnit.
+
+A test can therefore use the normal `Is()` entry point:
 
 ```csharp
-value.Guard().BeGreaterThan(0);
+[Fact]
+public void Result_is_valid()
+{
+    var result = Calculate();
+
+    result.Is().Eq(42);
+}
 ```
 
-A failed guard is still an `ArgumentException`, `ArgumentNullException`, or `ArgumentOutOfRangeException`, because it represents a violated API contract rather than an assertion failure.
+A failed `Is()` check produces `AssertException`, while `Guard()` intentionally continues to produce normal .NET argument exceptions.
 
-If another environment requires different exception semantics, add a custom policy rather than changing the assertion implementations.
+No xUnit-specific policy is required for the built-in `Is()` behavior.
+
+A custom policy can still be created when another test framework or environment requires different failure semantics.
 
 ---
 
 ## Architecture
 
-The core architecture consists of four concepts:
+The core architecture consists of four small pieces:
 
 ```text
              AssertionContext
@@ -771,40 +868,77 @@ The core architecture consists of four concepts:
                     │
           ┌─────────┴─────────┐
           │                   │
- Assertion extensions       TPolicy
+   Assertion extensions     TPolicy
           │                   │
-   Be / NotBe / ...      Failure behavior
+ Eq / Greater / ...      failure behavior
                               │
-                      ┌───────┴────────┐
-                      │                │
-                 ShouldPolicy     GuardPolicy
+                    ┌─────────┴──────────┐
+                    │                    │
+                 IsPolicy           GuardPolicy
 ```
 
-An assertion extension defines **what condition is valid**.
+The assertion extension contains the **condition**.
 
-The policy defines **what happens when the condition fails**.
+`AssertionContext` contains compiler-provided diagnostic information.
 
-The `AssertionContext` carries the original call-site information through the chain.
+The policy contains the **failure behavior**.
 
-For example, `BeGreaterThan(0)` does not need to know whether it is being used as:
+For example, `Greater(0)` does not need to know whether it is being used as:
 
 ```csharp
-value.Should().BeGreaterThan(0);
+value.Is().Greater(0);
 ```
 
 or:
 
 ```csharp
-value.Guard().BeGreaterThan(0);
+value.Guard().Greater(0);
 ```
 
-The extension evaluates the condition and delegates failures to `TPolicy`.
+The extension only evaluates the rule and delegates failures to `TPolicy`.
+
+---
+
+## `Assertion<T, TPolicy>`
+
+The assertion wrapper is a `readonly struct`.
+
+It contains:
+
+```text
+subject
+AssertionContext
+```
+
+and exposes:
+
+```csharp
+Value
+Context
+Expression
+```
+
+It also supports implicit conversion back to `T`:
+
+```csharp
+Process(value.Guard().Greater(0));
+```
+
+Its public constructor forms the minimal extension surface for type-refining custom assertions:
+
+```csharp
+new Assertion<TRefined, TPolicy>(
+    refinedValue,
+    assertion.Context);
+```
+
+No builder object or policy instance is required.
 
 ---
 
 ## `AssertionContext`
 
-`AssertionContext` is a lightweight `readonly struct` containing compiler-provided source information:
+`AssertionContext` is a `readonly struct` containing the call-site information captured at the assertion entry point:
 
 ```csharp
 public readonly struct AssertionContext
@@ -816,54 +950,33 @@ public readonly struct AssertionContext
 }
 ```
 
-The context is captured once at the entry point:
+Custom assertion extensions should preserve `assertion.Context` when returning the original assertion or refining it to another type.
 
-```csharp
-value.Should()
-value.Guard()
-value.AssertNotNull()
-value.GuardNotNull()
-```
-
-and then carried through every subsequent assertion.
-
-Custom assertions should always reuse `assertion.Context` rather than creating a new context.
+Do not replace the context with a new empty context unless losing the original call-site information is intentional.
 
 ---
 
 ## Assertion Policies
 
-Policies implement `IAssertionPolicy`.
-
-A policy controls what happens when an assertion fails.
-
-The built-in policies are:
+Policies implement:
 
 ```csharp
-ShouldPolicy
-GuardPolicy
+IAssertionPolicy
 ```
 
-`ShouldPolicy` maps assertion failures to `AssertException`.
-
-`GuardPolicy` maps them to the appropriate standard .NET argument exception.
-
-The policy contract distinguishes different failure categories:
+The policy interface distinguishes three failure categories:
 
 ```csharp
 public interface IAssertionPolicy
 {
-    [DoesNotReturn]
     static abstract void Fail(
         AssertionContext context,
         string message);
 
-    [DoesNotReturn]
     static abstract void FailNull(
         AssertionContext context,
         string message);
 
-    [DoesNotReturn]
     static abstract void FailOutOfRange<T>(
         AssertionContext context,
         T actualValue,
@@ -871,38 +984,41 @@ public interface IAssertionPolicy
 }
 ```
 
-This allows:
+The built-in policies are:
 
 ```csharp
-value.Guard().NotBeNull();
+IsPolicy
+GuardPolicy
 ```
 
-to produce `ArgumentNullException`, while:
+`IsPolicy` maps every assertion failure to:
 
 ```csharp
-value.Guard().BeGreaterThan(0);
+AssertException
 ```
 
-can produce `ArgumentOutOfRangeException`.
+`GuardPolicy` maps failures onto the standard .NET argument exception hierarchy:
 
-The same assertion implementation works with both policies.
+```text
+Fail(...)
+    → ArgumentException
+
+FailNull(...)
+    → ArgumentNullException
+
+FailOutOfRange(...)
+    → ArgumentOutOfRangeException
+```
+
+Because policy methods are static abstract members and policies are value types, no policy object needs to be allocated or virtually dispatched.
 
 ---
 
 ## Implementing a Custom Policy
 
-Create a custom policy when the **failure representation** needs to change.
+Create a custom policy when the **failure semantics** need to change.
 
-Typical use cases include:
-
-- test frameworks
-- domain-specific exceptions
-- protocol validation
-- parser errors
-- validation pipelines
-- diagnostic frameworks
-
-A policy should normally be a stateless value type:
+Examples include domain-specific exceptions, protocol validation, parser failures, or integration with another test framework.
 
 ```csharp
 public readonly struct DomainPolicy : IAssertionPolicy
@@ -949,15 +1065,7 @@ public readonly struct DomainPolicy : IAssertionPolicy
 }
 ```
 
-The policy contains no instance state.
-
-Policy behavior is selected through the generic parameter:
-
-```csharp
-Assertion<T, DomainPolicy>
-```
-
-No policy object needs to be allocated or stored in the assertion.
+The policy should normally remain stateless.
 
 ---
 
@@ -965,10 +1073,10 @@ No policy object needs to be allocated or stored in the assertion.
 
 A custom policy normally gets its own small extension method.
 
-The entry point should capture the same compiler-provided caller information as `Should()` and `Guard()`:
+Capture the same call-site information as `Is()` and `Guard()`:
 
 ```csharp
-public static class DomainAssertionExtensions
+public static class DomainAssertionEntryExtensions
 {
     [DebuggerStepThrough]
     [StackTraceHidden]
@@ -980,44 +1088,37 @@ public static class DomainAssertionExtensions
         [CallerFilePath] string? filePath = null,
         [CallerLineNumber] int lineNumber = 0)
     {
-        var context = new AssertionContext(
-            expression,
-            memberName,
-            filePath,
-            lineNumber);
-
-        return new Assertion<T, DomainPolicy>(subject, context);
+        return new Assertion<T, DomainPolicy>(
+            subject,
+            new AssertionContext(
+                expression,
+                memberName,
+                filePath,
+                lineNumber));
     }
 }
-```
-
-Usage:
-
-```csharp
-order.Total.DomainAssert()
-           .BeGreaterThan(0);
 ```
 
 Existing assertions can immediately be reused:
 
 ```csharp
-name.DomainAssert()
-    .NotBeNullOrWhiteSpace();
+order.Total.DomainAssert()
+           .Greater(0);
 
-id.DomainAssert()
-  .NotBeEmpty();
+name.DomainAssert()
+    .NotNullOrWhiteSpace();
 
 quantity.DomainAssert()
-        .BeInRange(1, 100);
+        .Range(1, 100);
 ```
 
-No copy of the actual assertion logic is necessary. Only the failure policy changes.
+Only the failure policy changes.
 
 ---
 
 ## Writing Custom Assertion Extensions
 
-Most application-specific behavior should be implemented as an **assertion extension**, not as a new policy.
+Most application-specific behavior should be implemented as an **assertion extension**, not as a policy.
 
 Use a policy when you want to change:
 
@@ -1027,13 +1128,15 @@ Use an assertion extension when you want to change:
 
 > What condition is being checked?
 
-For example:
+Suppose an application defines:
 
 ```csharp
 public readonly record struct Percentage(int Value);
 ```
 
-A reusable assertion can be written as:
+and every percentage must be between `0` and `100`.
+
+A custom assertion can be implemented once:
 
 ```csharp
 public static class PercentageAssertions
@@ -1041,7 +1144,7 @@ public static class PercentageAssertions
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<Percentage, TPolicy> BeValid<TPolicy>(
+    public static Assertion<Percentage, TPolicy> Valid<TPolicy>(
         this Assertion<Percentage, TPolicy> assertion,
         string? message = null)
         where TPolicy : struct, IAssertionPolicy
@@ -1061,20 +1164,25 @@ public static class PercentageAssertions
 }
 ```
 
-Usage:
+Usage as an invariant:
 
 ```csharp
-percentage.Should().BeValid();
-percentage.Guard().BeValid();
+percentage.Is().Valid();
 ```
 
-The rule exists only once. The selected policy determines the resulting failure semantics.
+and without another implementation as a guard:
+
+```csharp
+percentage.Guard().Valid();
+```
+
+The rule exists only once.
 
 ---
 
 ## Preserving Assertion Context in Extensions
 
-A custom extension should preserve the current assertion and its `AssertionContext` whenever possible.
+A custom assertion should preserve the current assertion and its context whenever possible.
 
 The normal pattern is:
 
@@ -1098,31 +1206,29 @@ public static Assertion<T, TPolicy> MyAssertion<T, TPolicy>(
 This preserves:
 
 - the subject
-- the policy
-- the original caller expression
-- the caller member
-- the source file
-- the source line
+- the selected policy
+- the original expression
+- member, file, and line information
 - fluent chaining
 
-Do **not** start a new `Should()` or `Guard()` chain inside an assertion extension.
+Do not start a new `Is()` or `Guard()` chain inside an assertion extension.
 
 Avoid:
 
 ```csharp
-public static Assertion<MyType, TPolicy> BeValid<TPolicy>(
+public static Assertion<MyType, TPolicy> Valid<TPolicy>(
     this Assertion<MyType, TPolicy> assertion)
     where TPolicy : struct, IAssertionPolicy
 {
-    assertion.Value.Should().Satisfy(...);
+    assertion.Value.Is().Satisfy(...);
 
     return assertion;
 }
 ```
 
-That would discard the original policy and call-site context. A `Guard()` chain could unexpectedly become a `Should()` assertion.
+That would create a new `IsPolicy` assertion and discard the original policy/context semantics.
 
-Instead, keep `TPolicy` and pass `assertion.Context` directly to the policy.
+Instead, evaluate the rule directly and invoke `TPolicy`.
 
 ---
 
@@ -1158,7 +1264,7 @@ public static class MeshAssertions
 It can now be used as a runtime assertion:
 
 ```csharp
-mesh.Should().HaveVertices();
+mesh.Is().HaveVertices();
 ```
 
 or as a guard:
@@ -1172,13 +1278,13 @@ public void Process(Mesh mesh)
 }
 ```
 
-The check is implemented once. The selected policy determines the exception type.
+The selected policy determines the exception type.
 
 ---
 
 ## Example: Refining the Assertion Type
 
-Assertions can also prove a more specific type and return a refined assertion.
+Extensions can refine the assertion type.
 
 Imagine:
 
@@ -1186,10 +1292,16 @@ Imagine:
 Animal animal = GetAnimal();
 ```
 
-A specialized assertion can validate the runtime type and return `Assertion<Dog, TPolicy>`:
+A specialized assertion can validate the runtime type and return:
 
 ```csharp
-public static Assertion<Dog, TPolicy> BeDog<TPolicy>(
+Assertion<Dog, TPolicy>
+```
+
+while preserving the original context:
+
+```csharp
+public static Assertion<Dog, TPolicy> Dog<TPolicy>(
     this Assertion<Animal, TPolicy> assertion,
     string? message = null)
     where TPolicy : struct, IAssertionPolicy
@@ -1210,14 +1322,14 @@ public static Assertion<Dog, TPolicy> BeDog<TPolicy>(
 This enables:
 
 ```csharp
-animal.Should()
-      .BeDog()
-      .HaveValidChip();
+animal.Is()
+      .Dog()
+      .Satisfy(static dog => dog.HasValidChip);
 ```
 
 without casts in application code.
 
-The built-in `BeOfType<T>()` follows the same principle.
+The built-in `BeOfType<TExpected>()` follows the same refinement principle.
 
 ---
 
@@ -1228,60 +1340,59 @@ The built-in `BeOfType<T>()` follows the same principle.
 Prefer:
 
 ```csharp
-public static Assertion<MyType, TPolicy> BeValid<TPolicy>(
-    this Assertion<MyType, TPolicy> assertion,
-    string? message = null)
+public static Assertion<MyType, TPolicy> Valid<TPolicy>(
+    this Assertion<MyType, TPolicy> assertion)
     where TPolicy : struct, IAssertionPolicy
 ```
 
-instead of:
+instead of coupling the rule to one policy:
 
 ```csharp
-public static Assertion<MyType, ShouldPolicy> BeValid(
-    this Assertion<MyType, ShouldPolicy> assertion)
+public static Assertion<MyType, IsPolicy> Valid(
+    this Assertion<MyType, IsPolicy> assertion)
 ```
 
-unless the assertion intentionally only makes sense for one policy.
-
-This makes the extension automatically usable with:
-
-```csharp
-Should()
-Guard()
-```
-
-and custom policies.
+unless the assertion intentionally only makes sense for one failure model.
 
 ### Return the assertion
 
-Prefer:
+Return the current assertion when the asserted type does not change:
 
 ```csharp
 return assertion;
 ```
 
-This allows:
+This preserves chaining:
 
 ```csharp
-value.Should()
-     .BeValid()
-     .HaveSomething()
+value.Is()
+     .Valid()
      .Satisfy(...);
 ```
 
 ### Refine types when validation proves something
 
-If an assertion proves that `T?` is actually `T`, return:
+If a check proves that:
+
+```csharp
+T?
+```
+
+is actually:
+
+```csharp
+T
+```
+
+return:
 
 ```csharp
 Assertion<T, TPolicy>
 ```
 
-rather than retaining the nullable assertion type.
-
 Likewise for runtime type checks.
 
-When constructing a refined assertion, always preserve:
+When creating the refined wrapper, preserve:
 
 ```csharp
 assertion.Context
@@ -1303,7 +1414,7 @@ Use:
 TPolicy.FailNull(...)
 ```
 
-when the subject must not be null.
+when the failure specifically means that a value must not be null.
 
 Use:
 
@@ -1311,42 +1422,48 @@ Use:
 TPolicy.FailOutOfRange(...)
 ```
 
-for range violations.
+for comparison or range violations.
 
-The distinction matters especially for `GuardPolicy`, because it maps these categories onto different standard .NET exception types.
+The distinction matters especially for `GuardPolicy`, because it selects the matching standard .NET exception type.
 
 ### Accept an optional custom message
 
-For consistency with the built-in API, reusable assertion extensions should normally accept:
+Built-in assertions follow this pattern:
 
 ```csharp
 string? message = null
 ```
 
-and use:
+Custom assertions should generally do the same:
 
 ```csharp
-message ?? "Default failure message."
+public static Assertion<MyType, TPolicy> Valid<TPolicy>(
+    this Assertion<MyType, TPolicy> assertion,
+    string? message = null)
+    where TPolicy : struct, IAssertionPolicy
 ```
 
-inside the failure branch.
+Create the default message only in the failure branch.
 
 ### Keep the successful path cheap
 
 Assertions are expected to be used frequently.
 
-Prefer code where diagnostic work is performed only after the condition has failed:
+Prefer direct checks and early returns.
 
-```csharp
-if (condition)
-    return assertion;
+Avoid unnecessary:
 
-TPolicy.Fail(
-    assertion.Context,
-    message ?? "Failure message.");
+```text
+LINQ
+closures
+reflection
+stack walking
+temporary collections
+exception creation
+diagnostic formatting
 ```
 
-Avoid unnecessary allocations, LINQ, closures, reflection, stack walking, or exception creation on the successful path.
+on the successful path.
 
 ---
 
@@ -1354,36 +1471,40 @@ Avoid unnecessary allocations, LINQ, closures, reflection, stack walking, or exc
 
 The library deliberately optimizes the successful path.
 
-`Assertion<T, TPolicy>` and `AssertionContext` are `readonly struct` types, and policies are stateless structs implementing static abstract interface members.
+`Assertion<T, TPolicy>` and `AssertionContext` are `readonly struct` values.
+
+Policies are stateless structs implementing static abstract interface members.
 
 The normal successful path is conceptually:
 
 ```text
 value
   ↓
-capture compiler-provided caller metadata
+Is() / Guard()
   ↓
-construct small assertion structs
+construct AssertionContext
+  ↓
+construct small Assertion<T, TPolicy>
   ↓
 evaluate condition
   ↓
-return same assertion / refined assertion
+return assertion
 ```
 
-There is no requirement for:
+The core design does not require:
 
 - policy instances
 - virtual dispatch
 - reflection
-- stack-trace inspection
-- fluent builder objects on the heap
+- stack walking
 - exception allocation
+- heap-allocated fluent builder objects
 
-The small entry points and assertion methods are marked to be inline-friendly.
+Failure paths are intentionally allowed to perform more work because they already result in an exception.
 
-Failure helpers are intentionally kept on the cold path and may perform more work because a failure already results in an exception.
+Default failure-message formatting and caller-context formatting occur on the failure path.
 
-The design priority is therefore:
+The priority is:
 
 ```text
 successful assertion
@@ -1393,6 +1514,28 @@ failed assertion
     → maximum diagnostic quality
 ```
 
+### Predicate assertions
+
+The predicate overload of `Satisfy()` takes a `Func<T, bool>`.
+
+A non-capturing static lambda is the preferred form when possible:
+
+```csharp
+value.Is().Satisfy(static value => value > 0);
+```
+
+A capturing lambda can require a closure allocation:
+
+```csharp
+value.Is().Satisfy(value => value > minimum);
+```
+
+When external state is simple and the expression remains readable, the Boolean overload can be the cheaper choice:
+
+```csharp
+value.Is().Satisfy(value > minimum);
+```
+
 ---
 
 ## Choosing Between Specialized Assertions and `Satisfy()`
@@ -1400,13 +1543,19 @@ failed assertion
 For one-off conditions, `Satisfy()` is useful:
 
 ```csharp
-mesh.Should().Satisfy(mesh.Vertices.Count > 0);
+mesh.Is().Satisfy(mesh.Vertices.Count > 0);
+```
+
+or:
+
+```csharp
+mesh.Is().Satisfy(static mesh => mesh.Vertices.Count > 0);
 ```
 
 For reusable domain rules, prefer an extension:
 
 ```csharp
-mesh.Should().HaveVertices();
+mesh.Is().HaveVertices();
 ```
 
 A dedicated extension:
@@ -1415,9 +1564,8 @@ A dedicated extension:
 HaveVertices()
     ├── communicates intent
     ├── centralizes the rule
-    ├── provides a better failure message
-    ├── preserves AssertionContext
-    ├── works with Should()
+    ├── provides a focused failure message
+    ├── works with Is()
     ├── works with Guard()
     └── works with custom policies
 ```
@@ -1435,29 +1583,29 @@ public Mesh Transform(
     float tolerance)
 {
     mesh.GuardNotNull();
-    tolerance.Guard().BeGreaterThan(0);
+    tolerance.Guard().Greater(0);
 
-    // mesh is non-null here
+    // mesh is known to be non-null here
     // ...
 }
 ```
 
-Use `Should()` for internal assumptions and invariants:
+Use `Is()` for internal assumptions and invariants:
 
 ```csharp
 var result = ComputeResult();
 
 result.AssertNotNull();
-result.Vertices.Should().NotBeEmpty();
+result.Vertices.Is().NotEmpty();
 ```
 
-Use the fluent null assertion when the refined value is consumed through the chain:
+Use fluent null refinement when the validated value stays inside the chain:
 
 ```csharp
-return GetResult()
-    .Should()
-    .NotBeNull()
-    .BeValid();
+GetOptionalName()
+    .Is()
+    .NotNull()
+    .NotEmpty();
 ```
 
 Create domain-specific extensions for repeated rules:
@@ -1465,20 +1613,41 @@ Create domain-specific extensions for repeated rules:
 ```csharp
 mesh.Guard()
     .HaveVertices()
-    .BeProcessable();
+    .Processable();
 ```
 
 Create a custom policy only when the **failure semantics** need to change.
 
 ---
 
+## API Overview
+
+| Category | Assertions |
+| --- | --- |
+| Entry points | `Is()`, `Guard()` |
+| Flow-aware null entry points | `AssertNotNull()`, `GuardNotNull()` |
+| Equality | `Eq()`, `NotEq()` |
+| Boolean | `True()`, `False()` |
+| Arbitrary condition | `Satisfy(bool)`, `Satisfy(Func<T, bool>)` |
+| Nullability | `NotNull()`, `Null()` |
+| Comparison | `Greater()`, `GreaterEq()`, `Less()`, `LessEq()`, `Range()` |
+| Floating point | `Approx()` |
+| Strings | `NotNullOrEmpty()`, `NotNullOrWhiteSpace()`, `NotEmpty()` |
+| Collections | `NotEmpty()`, `HaveCount()`, `HaveLength()` |
+| GUID | `NotBeEmpty()`, `NotBeNullOrEmpty()` |
+| Runtime type | `BeOfType<T>()` |
+
+All assertion methods support the selected `TPolicy`, so the same rule can normally be used through `Is()`, `Guard()`, or a custom policy entry point.
+
+---
+
 ## Summary
 
-The central idea of `Assertions` is simple:
+The core idea of `Assertions` is simple:
 
 ```csharp
-value.Should().BeValid();
-value.Guard().BeValid();
+value.Is().Valid();
+value.Guard().Valid();
 ```
 
 The validation rule is implemented once.
@@ -1500,22 +1669,16 @@ Assertion extension
  What happens on failure?
 ```
 
-`AssertionContext` preserves compiler-provided call-site information through the complete chain.
+`AssertionContext` carries compiler-provided call-site information through the chain.
 
-For nullable reference variables that must remain refined after the call, the direct flow-analysis-aware entry points are available:
-
-```csharp
-value.AssertNotNull();
-value.GuardNotNull();
-```
-
-This keeps assertions:
+The result is an assertion API that is:
 
 - composable
 - reusable
-- fast on the successful path
+- cheap on the successful path
 - easy to debug
-- compatible with nullable flow analysis
+- nullable-flow-aware where needed
 - independent from a particular exception model
 - extensible for application-specific rules
 - usable both for runtime invariants and API guards
+- usable directly in xUnit.net v3 through `AssertException`
