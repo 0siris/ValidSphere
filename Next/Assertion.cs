@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Assertions.Next;
@@ -160,4 +161,228 @@ public static class AssertionEntryExtensions {
         [CallerLineNumber] int lineNumber = 0
     )
         => new(subject, new AssertionContext(expression, memberName, filePath, lineNumber));
+
+
+    /// <summary>
+    ///     Asserts that the specified reference is not <see langword="null" />.
+    /// </summary>
+    /// <typeparam name="T">The reference type of the asserted value.</typeparam>
+    /// <param name="subject">
+    ///     The reference to validate. When this method returns normally, the compiler
+    ///     considers the reference to be non-null.
+    /// </param>
+    /// <param name="message">
+    ///     An optional custom failure message. When <see langword="null" />,
+    ///     a default assertion message is used.
+    /// </param>
+    /// <param name="expression">
+    ///     The source expression that produced <paramref name="subject" />,
+    ///     supplied automatically by the compiler.
+    /// </param>
+    /// <param name="memberName">
+    ///     The name of the calling member, supplied automatically by the compiler.
+    /// </param>
+    /// <param name="filePath">
+    ///     The source file path of the caller, supplied automatically by the compiler.
+    /// </param>
+    /// <param name="lineNumber">
+    ///     The source line number of the caller, supplied automatically by the compiler.
+    /// </param>
+    /// <returns>
+    ///     An assertion containing the validated non-null value for further fluent assertions
+    ///     or implicit extraction of the value.
+    /// </returns>
+    /// <exception cref="AssertException">
+    ///     <paramref name="subject"/> is <see langword="null" />.
+    /// </exception>
+    /// <remarks>
+    ///     Unlike <c>Should().NotBeNull()</c>, this direct assertion participates in nullable
+    ///     flow analysis through <see cref="NotNullAttribute"/> and therefore refines the
+    ///     original reference to non-null after a successful call.
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<T, ShouldPolicy> AssertNotNull<T>(
+        [NotNull] this T? subject,
+        string? message = null,
+        [CallerArgumentExpression("subject")] string? expression = null,
+        [CallerMemberName] string? memberName = null,
+        [CallerFilePath] string? filePath = null,
+        [CallerLineNumber] int lineNumber = 0
+    )
+        where T : class
+    {
+        var context = new AssertionContext(expression, memberName, filePath, lineNumber);
+        if (subject is null)
+            ShouldPolicy.FailNull(context, message ?? "Value must not be null");
+
+        return new(subject, context);
+    }
+
+    /// <summary>
+    ///     Asserts that the specified nullable value type contains a value.
+    /// </summary>
+    /// <typeparam name="T">The underlying value type.</typeparam>
+    /// <param name="subject">
+    ///     The nullable value to validate. When this method returns normally,
+    ///     the compiler considers the value to be non-null.
+    /// </param>
+    /// <param name="message">
+    ///     An optional custom failure message. When <see langword="null" />,
+    ///     a default assertion message is used.
+    /// </param>
+    /// <param name="expression">
+    ///     The source expression that produced <paramref name="subject" />,
+    ///     supplied automatically by the compiler.
+    /// </param>
+    /// <param name="memberName">
+    ///     The name of the calling member, supplied automatically by the compiler.
+    /// </param>
+    /// <param name="filePath">
+    ///     The source file path of the caller, supplied automatically by the compiler.
+    /// </param>
+    /// <param name="lineNumber">
+    ///     The source line number of the caller, supplied automatically by the compiler.
+    /// </param>
+    /// <returns>
+    ///     An assertion containing the underlying non-null value.
+    /// </returns>
+    /// <exception cref="AssertException">
+    ///     <paramref name="subject"/> has no value.
+    /// </exception>
+    [DebuggerStepThrough]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<T, ShouldPolicy> AssertNotNull<T>(
+        [NotNull] this T? subject,
+        string? message = null,
+        [CallerArgumentExpression("subject")] string? expression = null,
+        [CallerMemberName] string? memberName = null,
+        [CallerFilePath] string? filePath = null,
+        [CallerLineNumber] int lineNumber = 0
+    )
+        where T : struct {
+        var context = new AssertionContext(
+                                           expression,
+                                           memberName,
+                                           filePath,
+                                           lineNumber);
+
+        if (!subject.HasValue)
+            ShouldPolicy.FailNull(
+                                  context,
+                                  message ?? "Value must have a value.");
+
+        return new(subject.GetValueOrDefault(), context);
+    }
+
+
+    /// <summary>
+    ///     Validates that the specified argument or precondition value is not
+    ///     <see langword="null" />.
+    /// </summary>
+    /// <typeparam name="T">The reference type of the guarded value.</typeparam>
+    /// <param name="subject">
+    ///     The reference to validate. When this method returns normally, the compiler
+    ///     considers the reference to be non-null.
+    /// </param>
+    /// <param name="message">
+    ///     An optional custom failure message. When <see langword="null" />,
+    ///     a default guard message is used.
+    /// </param>
+    /// <param name="expression">
+    ///     The source expression that produced <paramref name="subject" />,
+    ///     supplied automatically by the compiler and used as the argument name.
+    /// </param>
+    /// <param name="memberName">
+    ///     The name of the calling member, supplied automatically by the compiler.
+    /// </param>
+    /// <param name="filePath">
+    ///     The source file path of the caller, supplied automatically by the compiler.
+    /// </param>
+    /// <param name="lineNumber">
+    ///     The source line number of the caller, supplied automatically by the compiler.
+    /// </param>
+    /// <returns>
+    ///     An assertion containing the validated non-null value for further fluent assertions
+    ///     or implicit extraction of the value.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    ///     <paramref name="subject"/> is <see langword="null" />.
+    /// </exception>
+    /// <remarks>
+    ///     This is the flow-analysis-aware counterpart to <c>Guard().NotBeNull()</c>.
+    ///     The <see cref="NotNullAttribute"/> informs nullable flow analysis that
+    ///     <paramref name="subject"/> is non-null after a successful call.
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<T, GuardPolicy> GuardNotNull<T>(
+        [NotNull] this T? subject,
+        string? message = null,
+        [CallerArgumentExpression("subject")] string? expression = null,
+        [CallerMemberName] string? memberName = null,
+        [CallerFilePath] string? filePath = null,
+        [CallerLineNumber] int lineNumber = 0
+    )
+        where T : class {
+        var context = new AssertionContext(expression, memberName, filePath, lineNumber);
+        if (subject is null)
+            GuardPolicy.FailNull(context, message ?? "Value must not be null");
+
+        return new(subject, context);
+    }
+
+    /// <summary>
+///     Validates that the specified nullable value-type argument contains a value.
+/// </summary>
+/// <typeparam name="T">The underlying value type.</typeparam>
+/// <param name="subject">
+///     The nullable value to validate. When this method returns normally,
+///     the compiler considers the value to be non-null.
+/// </param>
+/// <param name="message">
+///     An optional custom failure message. When <see langword="null" />,
+///     a default guard message is used.
+/// </param>
+/// <param name="expression">
+///     The source expression that produced <paramref name="subject" />,
+///     supplied automatically by the compiler and used as the argument name.
+/// </param>
+/// <param name="memberName">
+///     The name of the calling member, supplied automatically by the compiler.
+/// </param>
+/// <param name="filePath">
+///     The source file path of the caller, supplied automatically by the compiler.
+/// </param>
+/// <param name="lineNumber">
+///     The source line number of the caller, supplied automatically by the compiler.
+/// </param>
+/// <returns>
+///     An assertion containing the underlying non-null value.
+/// </returns>
+/// <exception cref="ArgumentNullException">
+///     <paramref name="subject"/> has no value.
+/// </exception>
+[DebuggerStepThrough]
+[MethodImpl(MethodImplOptions.AggressiveInlining)]
+public static Assertion<T, GuardPolicy> GuardNotNull<T>(
+    [NotNull] this T? subject,
+    string? message = null,
+    [CallerArgumentExpression("subject")] string? expression = null,
+    [CallerMemberName] string? memberName = null,
+    [CallerFilePath] string? filePath = null,
+    [CallerLineNumber] int lineNumber = 0
+)
+    where T : struct {
+    var context = new AssertionContext(
+        expression,
+        memberName,
+        filePath,
+        lineNumber);
+
+    if (!subject.HasValue)
+        GuardPolicy.FailNull(
+            context,
+            message ?? "Value must have a value.");
+
+    return new(subject.GetValueOrDefault(), context);
+}
 }

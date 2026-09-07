@@ -146,4 +146,47 @@ public static class CoreAssertions {
 
         return assertion;
     }
+
+    /// <summary>
+    ///     Asserts that the subject satisfies the specified predicate.
+    /// </summary>
+    /// <typeparam name="T">The type of the asserted value.</typeparam>
+    /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
+    /// <param name="assertion">The current assertion.</param>
+    /// <param name="predicate">
+    ///     A predicate that receives the current assertion subject and must return
+    ///     <see langword="true" /> for a valid value.
+    /// </param>
+    /// <param name="message">
+    ///     An optional custom failure message. When <see langword="null" />,
+    ///     a default message containing the captured predicate expression is used.
+    /// </param>
+    /// <param name="predicateExpression">
+    ///     The source expression of <paramref name="predicate" />,
+    ///     supplied automatically by the compiler.
+    /// </param>
+    /// <returns>The assertion for further chaining.</returns>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<T, TPolicy> Satisfy<T, TPolicy>(
+        this Assertion<T, TPolicy> assertion,
+        Func<T, bool> predicate,
+        string? message = null,
+        [CallerArgumentExpression("predicate")]
+        string? predicateExpression = null
+    ) where TPolicy : struct, IAssertionPolicy {
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        if (!predicate(assertion.Value)) {
+            TPolicy.Fail(assertion.Context,
+                         message
+                         ?? (predicateExpression is null
+                                 ? "Subject does not satisfy the required condition."
+                                 : $"Subject does not satisfy predicate '{predicateExpression}'."));
+        }
+
+        return assertion;
+    }
+
 }
