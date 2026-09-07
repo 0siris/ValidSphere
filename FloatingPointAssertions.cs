@@ -2,7 +2,7 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
-namespace Assertions;
+namespace ValidSphere;
 
 /// <summary>
 ///     Provides assertions for IEEE 754 floating-point values.

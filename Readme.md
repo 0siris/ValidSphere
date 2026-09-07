@@ -1,8 +1,8 @@
-# Assertions
+# ValidSphere
 
 A lightweight, extensible assertion and guard library for modern .NET.
 
-`Assertions` provides a small fluent API for validating runtime invariants, method arguments, preconditions, and values without introducing a large assertion framework.
+`ValidSphere` constrains program execution to valid states by rejecting invalid inputs and runtime conditions where their constraints are known. It is runtime-first and intended for production code as well as tests, but it is not primarily a test assertion framework.
 
 The same assertion extensions can be used with different **failure policies**:
 
@@ -17,6 +17,20 @@ The assertion logic stays the same. Only the failure behavior changes:
 - `Guard()` represents argument or precondition validation and throws standard .NET argument exceptions.
 
 This keeps validation rules reusable while preserving the correct failure semantics for each call site.
+
+---
+
+## Positioning
+
+ValidSphere sits between classic guard libraries and test assertion libraries:
+
+| Guard libraries | ValidSphere | Test assertions |
+| --- | --- | --- |
+| Guard clauses | Guards and invariants | Test-focused assertions |
+| Caller contracts | Runtime-first | Test diagnostics |
+| Precondition checks | Reusable rules | Expected-result checks |
+
+The name refers to the valid runtime state space that remains after guards, assertions, and invariants eliminate invalid states.
 
 ---
 
@@ -56,22 +70,34 @@ value
 
 ---
 
+## Non-Goals
+
+ValidSphere is not a DTO or object validation framework, a replacement for FluentValidation, a full test assertion or object-graph comparison library, or a reflection-based diagnostics and contract system.
+
+---
+
 ## Installation
 
 Add the project or package reference to the consuming project.
+
+For the preview package:
+
+```xml
+<PackageReference Include="ValidSphere" Version="0.1.0-preview.1" />
+```
 
 For a source/project reference:
 
 ```xml
 <ItemGroup>
-    <ProjectReference Include="..\extern\Assertions\Assertions.csproj" />
+    <ProjectReference Include="..\extern\ValidSphere\ValidSphere.csproj" />
 </ItemGroup>
 ```
 
 Then import the namespace:
 
 ```csharp
-using Assertions;
+using ValidSphere;
 ```
 
 ---
@@ -1643,7 +1669,7 @@ All assertion methods support the selected `TPolicy`, so the same rule can norma
 
 ## Summary
 
-The core idea of `Assertions` is simple:
+The core idea of `ValidSphere` is simple:
 
 ```csharp
 value.Is().Valid();

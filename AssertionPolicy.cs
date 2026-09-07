@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-namespace Assertions;
+namespace ValidSphere;
 
 /// <summary>
 ///     Defines the failure behavior used by fluent assertions.

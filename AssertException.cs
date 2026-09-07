@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Assertions;
+namespace ValidSphere;
 
 /// <summary>
 ///     Marks an exception as an assertion failure for compatible test frameworks.

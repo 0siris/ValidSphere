@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Assertions;
+namespace ValidSphere;
 
 /// <summary>
 ///     Contains compiler-provided source information for an assertion call site.
