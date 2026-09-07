@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Assertions.Next;
+namespace Assertions;
 
 /// <summary>
 ///     Provides assertions for collection sizes and array lengths.

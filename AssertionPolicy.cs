@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-namespace Assertions.Next;
+namespace Assertions;
 
 /// <summary>
 ///     Defines the failure behavior used by fluent assertions.

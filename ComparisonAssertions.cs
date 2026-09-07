@@ -2,7 +2,7 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
-namespace Assertions.Next;
+namespace Assertions;
 
 /// <summary>
 ///     Provides ordering and range assertions for comparable values.
