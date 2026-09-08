@@ -37,6 +37,31 @@ public static class ComparisonAssertions {
 
         return assertion;
     }
+    /// <summary>
+    ///     Asserts that the subject is greater than the specified value, building the failure message lazily.
+    /// </summary>
+    /// <remarks>
+    ///     <paramref name="messageFactory" /> is required, receives the call-site context, and is invoked only in the failure branch.
+    /// </remarks>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<T, TPolicy> Greater<T, TPolicy>(
+        this Assertion<T, TPolicy> assertion,
+        T expected,
+        Func<AssertionContext, string> messageFactory
+    )
+        where T : IComparisonOperators<T, T, bool>
+        where TPolicy : struct, IAssertionPolicy {
+        if (!(assertion.Value > expected)) {
+            TPolicy.FailOutOfRange(assertion.Context,
+                                   assertion.Value,
+                                   messageFactory(assertion.Context));
+        }
+
+        return assertion;
+    }
+
 
     /// <summary>
     ///     Asserts that the subject is greater than or equal to the specified value.
@@ -67,6 +92,31 @@ public static class ComparisonAssertions {
 
         return assertion;
     }
+    /// <summary>
+    ///     Asserts that the subject is greater than or equal to the specified value, building the failure message lazily.
+    /// </summary>
+    /// <remarks>
+    ///     <paramref name="messageFactory" /> is required, receives the call-site context, and is invoked only in the failure branch.
+    /// </remarks>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<T, TPolicy> GreaterEq<T, TPolicy>(
+        this Assertion<T, TPolicy> assertion,
+        T expected,
+        Func<AssertionContext, string> messageFactory
+    )
+        where T : IComparisonOperators<T, T, bool>
+        where TPolicy : struct, IAssertionPolicy {
+        if (!(assertion.Value >= expected)) {
+            TPolicy.FailOutOfRange(assertion.Context,
+                                   assertion.Value,
+                                   messageFactory(assertion.Context));
+        }
+
+        return assertion;
+    }
+
 
     /// <summary>
     ///     Asserts that the subject is less than the specified value.
@@ -97,6 +147,31 @@ public static class ComparisonAssertions {
 
         return assertion;
     }
+    /// <summary>
+    ///     Asserts that the subject is less than the specified value, building the failure message lazily.
+    /// </summary>
+    /// <remarks>
+    ///     <paramref name="messageFactory" /> is required, receives the call-site context, and is invoked only in the failure branch.
+    /// </remarks>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<T, TPolicy> Less<T, TPolicy>(
+        this Assertion<T, TPolicy> assertion,
+        T expected,
+        Func<AssertionContext, string> messageFactory
+    )
+        where T : IComparisonOperators<T, T, bool>
+        where TPolicy : struct, IAssertionPolicy {
+        if (!(assertion.Value < expected)) {
+            TPolicy.FailOutOfRange(assertion.Context,
+                                   assertion.Value,
+                                   messageFactory(assertion.Context));
+        }
+
+        return assertion;
+    }
+
 
     /// <summary>
     ///     Asserts that the subject is less than or equal to the specified value.
@@ -127,6 +202,31 @@ public static class ComparisonAssertions {
 
         return assertion;
     }
+    /// <summary>
+    ///     Asserts that the subject is less than or equal to the specified value, building the failure message lazily.
+    /// </summary>
+    /// <remarks>
+    ///     <paramref name="messageFactory" /> is required, receives the call-site context, and is invoked only in the failure branch.
+    /// </remarks>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<T, TPolicy> LessEq<T, TPolicy>(
+        this Assertion<T, TPolicy> assertion,
+        T expected,
+        Func<AssertionContext, string> messageFactory
+    )
+        where T : IComparisonOperators<T, T, bool>
+        where TPolicy : struct, IAssertionPolicy {
+        if (!(assertion.Value <= expected)) {
+            TPolicy.FailOutOfRange(assertion.Context,
+                                   assertion.Value,
+                                   messageFactory(assertion.Context));
+        }
+
+        return assertion;
+    }
+
 
     /// <summary>
     ///     Asserts that the subject lies within the inclusive range
@@ -158,6 +258,33 @@ public static class ComparisonAssertions {
             TPolicy.FailOutOfRange(assertion.Context,
                                    value,
                                    message ?? $"Value must be in range [{minimum}, {maximum}].");
+        }
+
+        return assertion;
+    }
+    /// <summary>
+    ///     Asserts that the subject lies within the inclusive range, building the failure message lazily.
+    /// </summary>
+    /// <remarks>
+    ///     <paramref name="messageFactory" /> is required, receives the call-site context, and is invoked only in the failure branch.
+    /// </remarks>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<T, TPolicy> Range<T, TPolicy>(
+        this Assertion<T, TPolicy> assertion,
+        T minimum,
+        T maximum,
+        Func<AssertionContext, string> messageFactory
+    )
+        where T : IComparisonOperators<T, T, bool>
+        where TPolicy : struct, IAssertionPolicy {
+        var value = assertion.Value;
+
+        if (!(minimum <= value && value <= maximum)) {
+            TPolicy.FailOutOfRange(assertion.Context,
+                                   value,
+                                   messageFactory(assertion.Context));
         }
 
         return assertion;

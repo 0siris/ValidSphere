@@ -56,4 +56,170 @@ public static class FloatingPointAssertions {
 
         return assertion;
     }
+    /// <summary>
+    ///     Asserts approximate equality, building the failure message lazily.
+    /// </summary>
+    /// <remarks>
+    ///     <paramref name="messageFactory" /> is required, receives the call-site context, and is invoked only in the failure branch.
+    /// </remarks>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<T, TPolicy> Approx<T, TPolicy>(
+        this Assertion<T, TPolicy> assertion,
+        T expected,
+        T tolerance,
+        Func<AssertionContext, string> messageFactory
+    )
+        where T : IFloatingPointIeee754<T>
+        where TPolicy : struct, IAssertionPolicy {
+        if (T.IsNaN(tolerance) || tolerance < T.Zero) {
+            throw new ArgumentOutOfRangeException(nameof(tolerance),
+                                                  tolerance,
+                                                  "Tolerance must be non-negative.");
+        }
+
+        var actual = assertion.Value;
+
+        // Handles equal infinities as well.
+        if (actual == expected)
+            return assertion;
+
+        var difference = T.Abs(actual - expected);
+
+        if (T.IsNaN(difference) || difference > tolerance) {
+            TPolicy.Fail(assertion.Context, messageFactory(assertion.Context));
+        }
+
+        return assertion;
+    }
+    /// <summary>
+    ///     Asserts that the subject is not <see langword="NaN" />.
+    /// </summary>
+    /// <typeparam name="T">The floating-point type.</typeparam>
+    /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
+    /// <param name="assertion">The current assertion.</param>
+    /// <param name="message">
+    ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
+    /// </param>
+    /// <returns>The original assertion for further chaining or implicit value extraction.</returns>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<T, TPolicy> NotNaN<T, TPolicy>(
+        this Assertion<T, TPolicy> assertion,
+        string? message = null
+    )
+        where T : IFloatingPointIeee754<T>
+        where TPolicy : struct, IAssertionPolicy {
+        if (T.IsNaN(assertion.Value)) {
+            TPolicy.Fail(assertion.Context, message ?? "Value must not be NaN.");
+        }
+
+        return assertion;
+    }
+
+    /// <summary>
+    ///     Asserts that the subject is finite (neither <see langword="NaN" /> nor infinite).
+    /// </summary>
+    /// <typeparam name="T">The floating-point type.</typeparam>
+    /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
+    /// <param name="assertion">The current assertion.</param>
+    /// <param name="message">
+    ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
+    /// </param>
+    /// <returns>The original assertion for further chaining or implicit value extraction.</returns>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<T, TPolicy> Finite<T, TPolicy>(
+        this Assertion<T, TPolicy> assertion,
+        string? message = null
+    )
+        where T : IFloatingPointIeee754<T>
+        where TPolicy : struct, IAssertionPolicy {
+        if (!T.IsFinite(assertion.Value)) {
+            TPolicy.Fail(assertion.Context, message ?? "Value must be finite.");
+        }
+
+        return assertion;
+    }
+
+    /// <summary>
+    ///     Asserts that the subject is infinite (positive or negative infinity).
+    /// </summary>
+    /// <typeparam name="T">The floating-point type.</typeparam>
+    /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
+    /// <param name="assertion">The current assertion.</param>
+    /// <param name="message">
+    ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
+    /// </param>
+    /// <returns>The original assertion for further chaining or implicit value extraction.</returns>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<T, TPolicy> Infinite<T, TPolicy>(
+        this Assertion<T, TPolicy> assertion,
+        string? message = null
+    )
+        where T : IFloatingPointIeee754<T>
+        where TPolicy : struct, IAssertionPolicy {
+        if (!T.IsInfinity(assertion.Value)) {
+            TPolicy.Fail(assertion.Context, message ?? "Value must be infinite.");
+        }
+
+        return assertion;
+    }
+
+    /// <summary>
+    ///     Asserts that the subject is positive infinity.
+    /// </summary>
+    /// <typeparam name="T">The floating-point type.</typeparam>
+    /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
+    /// <param name="assertion">The current assertion.</param>
+    /// <param name="message">
+    ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
+    /// </param>
+    /// <returns>The original assertion for further chaining or implicit value extraction.</returns>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<T, TPolicy> PositiveInfinity<T, TPolicy>(
+        this Assertion<T, TPolicy> assertion,
+        string? message = null
+    )
+        where T : IFloatingPointIeee754<T>
+        where TPolicy : struct, IAssertionPolicy {
+        if (!T.IsPositiveInfinity(assertion.Value)) {
+            TPolicy.Fail(assertion.Context, message ?? "Value must be positive infinity.");
+        }
+
+        return assertion;
+    }
+
+    /// <summary>
+    ///     Asserts that the subject is negative infinity.
+    /// </summary>
+    /// <typeparam name="T">The floating-point type.</typeparam>
+    /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
+    /// <param name="assertion">The current assertion.</param>
+    /// <param name="message">
+    ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
+    /// </param>
+    /// <returns>The original assertion for further chaining or implicit value extraction.</returns>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<T, TPolicy> NegativeInfinity<T, TPolicy>(
+        this Assertion<T, TPolicy> assertion,
+        string? message = null
+    )
+        where T : IFloatingPointIeee754<T>
+        where TPolicy : struct, IAssertionPolicy {
+        if (!T.IsNegativeInfinity(assertion.Value)) {
+            TPolicy.Fail(assertion.Context, message ?? "Value must be negative infinity.");
+        }
+
+        return assertion;
+    }
 }
