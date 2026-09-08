@@ -6,7 +6,7 @@
     <RootNamespace>ValidSphere</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>0.1.0-preview.1</Version>
+    <Version>0.1.0-preview.2</Version>
     <Title>ValidSphere - Runtime Guards and Invariants for .NET</Title>
     <Authors>0siris</Authors>
     <Description>A lightweight, extensible assertion and guard library for modern .NET.</Description>
