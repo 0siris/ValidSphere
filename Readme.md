@@ -136,9 +136,8 @@ The package targets `net10.0`, `net8.0` (identical API) and `netstandard2.1` (wi
 Builds are deterministic (`Deterministic`, `ContinuousIntegrationBuild` on CI) and SourceLink-enabled (commit in the product version, PDBs in the symbol package). Verify with `dotnet tool install -g sourcelink` followed by `sourcelink test <package>.pdb`.
 
 For the preview package:
-
 ```xml
-<PackageReference Include="ValidSphere" Version="0.2.0-preview.1" />
+<PackageReference Include="ValidSphere" Version="0.2.0-preview.3" />
 ```
 
 For a source/project reference:
