@@ -1,0 +1,108 @@
+using System.Diagnostics;
+using System.Net.Mail;
+using System.Runtime.CompilerServices;
+
+namespace ValidSphere;
+
+/// <summary>
+///     Provides assertions specialized for mail addresses.
+/// </summary>
+/// <remarks>
+///     Strings switch into mail mode through <see cref="AsMailAddress{TPolicy}(Assertion{string,TPolicy},string?)" />,
+///     and all mail checks run on <see cref="MailAddress" /> so malformed input fails at the refinement.
+/// </remarks>
+public static class MailAssertions {
+    /// <summary>
+    ///     Switches the string assertion into mail mode, parsing the string without throwing on invalid input.
+    /// </summary>
+    /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
+    /// <param name="assertion">The current assertion.</param>
+    /// <param name="message">
+    ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
+    /// </param>
+    /// <returns>An assertion over a <see cref="MailAddress" />.</returns>
+    /// <remarks>
+    ///     Parsing checks syntax only, never reachability.
+    /// </remarks>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<MailAddress, TPolicy> AsMailAddress<TPolicy>(
+        this Assertion<string, TPolicy> assertion,
+        string? message = null
+    )
+        where TPolicy : struct, IAssertionPolicy {
+        if (!MailAddress.TryCreate(assertion.Value, out var address) || address is null)
+            TPolicy.Fail(assertion.Context, message ?? "String must be a valid mail address.");
+
+        return new Assertion<MailAddress, TPolicy>(address, assertion.Context);
+    }
+
+    /// <summary>
+    ///     Asserts that the mail address targets the given host.
+    /// </summary>
+    /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
+    /// <param name="assertion">The current assertion.</param>
+    /// <param name="host">The expected host (the part after '@').</param>
+    /// <param name="comparison">The string comparison to use. Defaults to <see cref="StringComparison.OrdinalIgnoreCase" />.</param>
+    /// <param name="message">
+    ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
+    /// </param>
+    /// <returns>The original assertion for further chaining or implicit value extraction.</returns>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<MailAddress, TPolicy> HaveHost<TPolicy>(
+        this Assertion<MailAddress, TPolicy> assertion,
+        string host,
+        StringComparison comparison = StringComparison.OrdinalIgnoreCase,
+        string? message = null
+    )
+        where TPolicy : struct, IAssertionPolicy {
+        ArgumentNullException.ThrowIfNull(host);
+
+        var value = assertion.Value;
+
+        if (value is null)
+            TPolicy.FailNull(assertion.Context, message ?? "Mail address must not be null.");
+
+        if (!value.Host.Equals(host, comparison))
+            TPolicy.Fail(assertion.Context, message ?? $"Mail address must have host '{host}'.");
+
+        return assertion;
+    }
+
+    /// <summary>
+    ///     Asserts that the mail address has the given user part.
+    /// </summary>
+    /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
+    /// <param name="assertion">The current assertion.</param>
+    /// <param name="user">The expected user (the part before '@').</param>
+    /// <param name="comparison">The string comparison to use. Defaults to <see cref="StringComparison.OrdinalIgnoreCase" />.</param>
+    /// <param name="message">
+    ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
+    /// </param>
+    /// <returns>The original assertion for further chaining or implicit value extraction.</returns>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<MailAddress, TPolicy> HaveUser<TPolicy>(
+        this Assertion<MailAddress, TPolicy> assertion,
+        string user,
+        StringComparison comparison = StringComparison.OrdinalIgnoreCase,
+        string? message = null
+    )
+        where TPolicy : struct, IAssertionPolicy {
+        ArgumentNullException.ThrowIfNull(user);
+
+        var value = assertion.Value;
+
+        if (value is null)
+            TPolicy.FailNull(assertion.Context, message ?? "Mail address must not be null.");
+
+        if (!value.User.Equals(user, comparison))
+            TPolicy.Fail(assertion.Context, message ?? $"Mail address must have user '{user}'.");
+
+        return assertion;
+    }
+}
