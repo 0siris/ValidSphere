@@ -20,7 +20,7 @@ jobs:
         shell: bash
         run: |
           version="${GITHUB_REF_NAME#v}"
-          dotnet pack ValidSphere.csproj --configuration Release --output artifacts -p:PackageVersion="$version"
+          dotnet pack src/ValidSphere/ValidSphere.csproj --configuration Release --output artifacts -p:PackageVersion="$version"
       - name: Authenticate with NuGet.org
         id: nuget
         uses: NuGet/login@v1.2.0

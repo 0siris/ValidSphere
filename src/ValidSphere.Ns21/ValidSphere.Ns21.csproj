@@ -36,7 +36,7 @@
   </UsingTask>
 
   <Target Name="GenerateSources" BeforeTargets="BeforeBuild">
-    <GenerateNs21Sources SourceDir="$(MSBuildProjectDirectory)\.." GenDir="$(MSBuildProjectDirectory)\gen" />
+    <GenerateNs21Sources SourceDir="$(MSBuildProjectDirectory)\..\ValidSphere" GenDir="$(MSBuildProjectDirectory)\gen" />
     <ItemGroup>
       <Compile Include="gen/**/*.cs" />
     </ItemGroup>

@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/ValidSphere/ValidSphere.csproj" />
+  <Project Path="src/ValidSphere.Ns21/ValidSphere.Ns21.csproj" />
+</Solution>

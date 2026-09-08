@@ -18,21 +18,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="Readme.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\Readme.md" Pack="true" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Remove="ValidSphere.Ns21/**/*.cs" />
-    <EmbeddedResource Remove="ValidSphere.Ns21/**/*" />
-    <None Remove="ValidSphere.Ns21/**/*" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="ValidSphere.Ns21\ValidSphere.Ns21.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\ValidSphere.Ns21\ValidSphere.Ns21.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <Target Name="AddNs21ToPackage" BeforeTargets="_GetPackageFiles">
-    <MSBuild Projects="ValidSphere.Ns21\ValidSphere.Ns21.csproj" Targets="Build" Properties="Configuration=$(Configuration)" />
+    <MSBuild Projects="..\ValidSphere.Ns21\ValidSphere.Ns21.csproj" Targets="Build" Properties="Configuration=$(Configuration)" />
     <ItemGroup>
-      <None Include="ValidSphere.Ns21\bin\$(Configuration)\netstandard2.1\ValidSphere.dll" Pack="true" PackagePath="lib/netstandard2.1" />
+      <None Include="..\ValidSphere.Ns21\bin\$(Configuration)\netstandard2.1\ValidSphere.dll" Pack="true" PackagePath="lib/netstandard2.1" />
     </ItemGroup>
   </Target>
 </Project>
