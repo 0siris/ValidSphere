@@ -29,7 +29,7 @@
   </ItemGroup>
 
   <Target Name="AddNs21ToPackage" BeforeTargets="_GetPackageFiles">
-    <MSBuild Projects="..\ValidSphere.Ns21\ValidSphere.Ns21.csproj" Targets="Build" Properties="Configuration=$(Configuration)" />
+    <MSBuild Projects="..\ValidSphere.Ns21\ValidSphere.Ns21.csproj" Targets="Build" Properties="Configuration=$(Configuration);PackageVersion=$(PackageVersion);AssemblyVersion=$(AssemblyVersion);FileVersion=$(FileVersion);InformationalVersion=$(InformationalVersion)" />
     <ItemGroup>
       <None Include="..\ValidSphere.Ns21\bin\$(Configuration)\netstandard2.1\ValidSphere.dll" Pack="true" PackagePath="lib/netstandard2.1" />
     </ItemGroup>
