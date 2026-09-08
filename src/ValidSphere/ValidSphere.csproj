@@ -21,6 +21,10 @@
     <None Include="..\..\Readme.md" Pack="true" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
+  <!-- Build-Kopplung ohne Compile-Kopplung: ReferenceOutputAssembly="false" baut das Sidecar bei jedem Build mit, -->
+  <!-- verwendet seine DLL aber nicht als Referenz. true (Default) ginge hier nicht: beide Assemblies definieren -->
+  <!-- dieselben Typen (ValidSphere.Assertion<T, ...> etc.), das gaebe Duplikate/Mehrdeutigkeiten. Der Output wird -->
+  <!-- erst beim Packen genutzt (AddNs21ToPackage unten). -->
     <ProjectReference Include="..\ValidSphere.Ns21\ValidSphere.Ns21.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
