@@ -32,7 +32,7 @@ See [NuGet trusted publishing](https://learn.microsoft.com/nuget/nuget-org/trust
 
 ## Create a preview release
 
-1. Prepare the release on a short-lived branch from `main`: update `<Version>` in `Directory.Build.props` and the installation example in `Readme.md`, then open a pull request `main` → `release`.
+1. Prepare the release on a short-lived branch from `main`: update the installation example in `Readme.md` (the package version comes from the release tag), then open a pull request `main` → `release`.
 2. Merge the pull request once the `build` check is green. GitHub blocks the merge otherwise — `release` accepts no direct pushes, not even for administrators.
 3. Confirm that `origin/release` contains the merge commit:
 
