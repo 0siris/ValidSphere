@@ -1,0 +1,15 @@
+name: CI
+on:
+  push:
+    branches: [main, release]
+  pull_request:
+    branches: [main, release]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-dotnet@v6.0.0
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet build ValidSphere.csproj -c Release --nologo
