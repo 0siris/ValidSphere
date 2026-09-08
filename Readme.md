@@ -131,7 +131,7 @@ The package targets `net10.0`, `net8.0` (identical API) and `netstandard2.1` (wi
 For the preview package:
 
 ```xml
-<PackageReference Include="ValidSphere" Version="0.1.0-preview.1" />
+<PackageReference Include="ValidSphere" Version="0.1.0-preview.3" />
 ```
 
 For a source/project reference:
