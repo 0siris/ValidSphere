@@ -23,54 +23,45 @@ This keeps validation rules reusable while preserving the correct failure semant
 - [Positioning](#positioning)
 - [Goals](#goals)
 - [Non-Goals](#non-goals)
-- [Installation](#installation)
-- [Basic Usage](#basic-usage)
-  - [Runtime assertions with `Is()`](#runtime-assertions-with-is)
-- [Guards](#guards)
-- [`Is()` vs. `Guard()`](#is-vs-guard)
-- [Chaining Assertions](#chaining-assertions)
-- [Using the Asserted Value](#using-the-asserted-value)
-- [Common Assertions](#common-assertions)
-  - [Equality](#equality)
-  - [Boolean values](#boolean-values)
-  - [Arbitrary conditions](#arbitrary-conditions)
-- [Nullability](#nullability)
-  - [Fluent null assertions](#fluent-null-assertions)
-  - [Flow-analysis-aware null checks](#flow-analysis-aware-null-checks)
-- [Numeric Comparisons](#numeric-comparisons)
-- [Floating-Point Assertions](#floating-point-assertions)
-- [Strings](#strings)
-- [GUIDs](#guids)
-- [Collections](#collections)
-- [Paths, URIs, and Mail Addresses](#paths-uris-and-mail-addresses)
-- [Runtime Type Assertions](#runtime-type-assertions)
-- [Optional Failure Messages](#optional-failure-messages)
-  - [Performance note for custom messages](#performance-note-for-custom-messages)
-- [Caller Information and Debugging](#caller-information-and-debugging)
-- [Test Framework Integration](#test-framework-integration)
-- [Architecture](#architecture)
-- [`Assertion<T, TPolicy>`](#assertiont-tpolicy)
-- [`AssertionContext`](#assertioncontext)
-- [Assertion Policies](#assertion-policies)
-- [Implementing a Custom Policy](#implementing-a-custom-policy)
-- [Creating an Entry Point for a Custom Policy](#creating-an-entry-point-for-a-custom-policy)
-- [Writing Custom Assertion Extensions](#writing-custom-assertion-extensions)
-- [Preserving Assertion Context in Extensions](#preserving-assertion-context-in-extensions)
-- [Example: Domain-Specific Extension](#example-domain-specific-extension)
-- [Example: Refining the Assertion Type](#example-refining-the-assertion-type)
-- [Extension Design Guidelines](#extension-design-guidelines)
-  - [Keep policies generic](#keep-policies-generic)
-  - [Return the assertion](#return-the-assertion)
-  - [Refine types when validation proves something](#refine-types-when-validation-proves-something)
-  - [Use the correct failure category](#use-the-correct-failure-category)
-  - [Accept an optional custom message](#accept-an-optional-custom-message)
-  - [Keep the successful path cheap](#keep-the-successful-path-cheap)
-- [Performance Model](#performance-model)
-  - [Predicate assertions](#predicate-assertions)
-- [Choosing Between Specialized Assertions and `Satisfy()`](#choosing-between-specialized-assertions-and-satisfy)
-- [Recommended Usage](#recommended-usage)
-- [API Overview](#api-overview)
-- [Summary](#summary)
+- [Getting Started](#getting-started)
+  - [Installation](#installation)
+  - [Basic Usage](#basic-usage)
+  - [Guards](#guards)
+  - [`Is()` vs. `Guard()`](#is-vs-guard)
+  - [Chaining Assertions](#chaining-assertions)
+  - [Using the Asserted Value](#using-the-asserted-value)
+- [Assertion Reference](#assertion-reference)
+  - [Common Assertions](#common-assertions)
+  - [Nullability](#nullability)
+  - [Numeric Comparisons](#numeric-comparisons)
+  - [Floating-Point Assertions](#floating-point-assertions)
+  - [Strings](#strings)
+  - [GUIDs](#guids)
+  - [Collections](#collections)
+  - [Paths, URIs, and Mail Addresses](#paths-uris-and-mail-addresses)
+  - [Runtime Type Assertions](#runtime-type-assertions)
+  - [Optional Failure Messages](#optional-failure-messages)
+- [Diagnostics and Testing](#diagnostics-and-testing)
+  - [Caller Information and Debugging](#caller-information-and-debugging)
+  - [Test Framework Integration](#test-framework-integration)
+- [Architecture and Extending](#architecture-and-extending)
+  - [Architecture](#architecture)
+  - [`Assertion<T, TPolicy>`](#assertiont-tpolicy)
+  - [`AssertionContext`](#assertioncontext)
+  - [Assertion Policies](#assertion-policies)
+  - [Implementing a Custom Policy](#implementing-a-custom-policy)
+  - [Creating an Entry Point for a Custom Policy](#creating-an-entry-point-for-a-custom-policy)
+  - [Writing Custom Assertion Extensions](#writing-custom-assertion-extensions)
+  - [Preserving Assertion Context in Extensions](#preserving-assertion-context-in-extensions)
+  - [Example: Domain-Specific Extension](#example-domain-specific-extension)
+  - [Example: Refining the Assertion Type](#example-refining-the-assertion-type)
+  - [Extension Design Guidelines](#extension-design-guidelines)
+- [Appendix](#appendix)
+  - [Performance Model](#performance-model)
+  - [Choosing Between Specialized Assertions and `Satisfy()`](#choosing-between-specialized-assertions-and-satisfy)
+  - [Recommended Usage](#recommended-usage)
+  - [API Overview](#api-overview)
+  - [Summary](#summary)
 
 ---
 
@@ -129,6 +120,8 @@ value
 ValidSphere is not a DTO or object validation framework, a replacement for FluentValidation, a full test assertion or object-graph comparison library, or a reflection-based diagnostics and contract system.
 
 ---
+
+# Getting Started
 
 ## Installation
 
@@ -376,6 +369,8 @@ GuardNotNull()
 The same principle applies to `AssertNotNull()`.
 
 ---
+
+# Assertion Reference
 
 ## Common Assertions
 
@@ -858,6 +853,8 @@ The built-in default diagnostic strings are created only in the failure branch.
 
 ---
 
+# Diagnostics and Testing
+
 ## Caller Information and Debugging
 
 `Is()`, `Guard()`, `AssertNotNull()`, and `GuardNotNull()` capture source information automatically.
@@ -947,6 +944,8 @@ No xUnit-specific policy is required for the built-in `Is()` behavior.
 A custom policy can still be created when another test framework or environment requires different failure semantics.
 
 ---
+
+# Architecture and Extending
 
 ## Architecture
 
@@ -1558,6 +1557,8 @@ diagnostic formatting
 on the successful path.
 
 ---
+
+# Appendix
 
 ## Performance Model
 
