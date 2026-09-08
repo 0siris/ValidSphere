@@ -16,7 +16,7 @@ public readonly struct FilePath {
     /// <param name="value">The file path. Must not be <see langword="null" />.</param>
     /// <exception cref="ArgumentNullException"><paramref name="value" /> is <see langword="null" />.</exception>
     public FilePath(string value) {
-        ArgumentNullException.ThrowIfNull(value);
+        ThrowHelper.ThrowIfNull(value, nameof(value));
         Value = value;
     }
 

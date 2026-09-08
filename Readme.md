@@ -126,6 +126,7 @@ ValidSphere is not a DTO or object validation framework, a replacement for Fluen
 ## Installation
 
 Add the project or package reference to the consuming project.
+The package targets `net10.0` and `net8.0` with an identical API on both frameworks.
 
 For the preview package:
 

@@ -59,7 +59,7 @@ public static class MailAssertions {
         string? message = null
     )
         where TPolicy : struct, IAssertionPolicy {
-        ArgumentNullException.ThrowIfNull(host);
+        ThrowHelper.ThrowIfNull(host, nameof(host));
 
         var value = assertion.Value;
 
@@ -93,7 +93,7 @@ public static class MailAssertions {
         string? message = null
     )
         where TPolicy : struct, IAssertionPolicy {
-        ArgumentNullException.ThrowIfNull(user);
+        ThrowHelper.ThrowIfNull(user, nameof(user));
 
         var value = assertion.Value;
 
