@@ -18,6 +18,60 @@ The assertion logic stays the same. Only the failure behavior changes:
 
 This keeps validation rules reusable while preserving the correct failure semantics for each call site.
 
+## Contents
+
+- [Positioning](#positioning)
+- [Goals](#goals)
+- [Non-Goals](#non-goals)
+- [Installation](#installation)
+- [Basic Usage](#basic-usage)
+  - [Runtime assertions with `Is()`](#runtime-assertions-with-is)
+- [Guards](#guards)
+- [`Is()` vs. `Guard()`](#is-vs-guard)
+- [Chaining Assertions](#chaining-assertions)
+- [Using the Asserted Value](#using-the-asserted-value)
+- [Common Assertions](#common-assertions)
+  - [Equality](#equality)
+  - [Boolean values](#boolean-values)
+  - [Arbitrary conditions](#arbitrary-conditions)
+- [Nullability](#nullability)
+  - [Fluent null assertions](#fluent-null-assertions)
+  - [Flow-analysis-aware null checks](#flow-analysis-aware-null-checks)
+- [Numeric Comparisons](#numeric-comparisons)
+- [Floating-Point Assertions](#floating-point-assertions)
+- [Strings](#strings)
+- [GUIDs](#guids)
+- [Collections](#collections)
+- [Paths, URIs, and Mail Addresses](#paths-uris-and-mail-addresses)
+- [Runtime Type Assertions](#runtime-type-assertions)
+- [Optional Failure Messages](#optional-failure-messages)
+  - [Performance note for custom messages](#performance-note-for-custom-messages)
+- [Caller Information and Debugging](#caller-information-and-debugging)
+- [Test Framework Integration](#test-framework-integration)
+- [Architecture](#architecture)
+- [`Assertion<T, TPolicy>`](#assertiont-tpolicy)
+- [`AssertionContext`](#assertioncontext)
+- [Assertion Policies](#assertion-policies)
+- [Implementing a Custom Policy](#implementing-a-custom-policy)
+- [Creating an Entry Point for a Custom Policy](#creating-an-entry-point-for-a-custom-policy)
+- [Writing Custom Assertion Extensions](#writing-custom-assertion-extensions)
+- [Preserving Assertion Context in Extensions](#preserving-assertion-context-in-extensions)
+- [Example: Domain-Specific Extension](#example-domain-specific-extension)
+- [Example: Refining the Assertion Type](#example-refining-the-assertion-type)
+- [Extension Design Guidelines](#extension-design-guidelines)
+  - [Keep policies generic](#keep-policies-generic)
+  - [Return the assertion](#return-the-assertion)
+  - [Refine types when validation proves something](#refine-types-when-validation-proves-something)
+  - [Use the correct failure category](#use-the-correct-failure-category)
+  - [Accept an optional custom message](#accept-an-optional-custom-message)
+  - [Keep the successful path cheap](#keep-the-successful-path-cheap)
+- [Performance Model](#performance-model)
+  - [Predicate assertions](#predicate-assertions)
+- [Choosing Between Specialized Assertions and `Satisfy()`](#choosing-between-specialized-assertions-and-satisfy)
+- [Recommended Usage](#recommended-usage)
+- [API Overview](#api-overview)
+- [Summary](#summary)
+
 ---
 
 ## Positioning
@@ -691,14 +745,26 @@ The built-in collection assertions operate on `ICollection` or arrays and use `C
 
 ---
 
+## Paths, URIs, and Mail Addresses
+
+Strings switch into a domain mode before path, URI, or mail checks run, so file semantics never leak onto a plain string:
+
+```csharp
+path.Is().AsFile().Exists().HaveExtension(".json");
+url.Guard().AsUri().Absolute().HaveScheme("https");
+mail.Is().AsMailAddress().HaveHost("contoso.com");
+```
+
+`AsFile()`/`AsDirectory()` refine to `FilePath`/`DirectoryPath`, which also forward a curated set of members to `System.IO.File`/`Directory`, so asserting and working share one chain (`file.ReadAllText()`, `dir.GetFiles()`).
+
 ## Runtime Type Assertions
 
-Runtime type checks can refine the assertion type through `BeOfType<T>()`.
+Runtime type checks can refine the assertion type through `OfType<T>()`.
 
 ```csharp
 object value = GetValue();
 
-value.Is().BeOfType<MyType>();
+value.Is().OfType<MyType>();
 ```
 
 After the check, the returned assertion contains `MyType` rather than `object`.
@@ -707,7 +773,7 @@ This allows type-specific assertions without an explicit cast:
 
 ```csharp
 value.Is()
-     .BeOfType<MyType>()
+     .OfType<MyType>()
      .Satisfy(static typed => typed.IsValid);
 ```
 
@@ -1355,7 +1421,7 @@ animal.Is()
 
 without casts in application code.
 
-The built-in `BeOfType<TExpected>()` follows the same refinement principle.
+The built-in `OfType<TExpected>()` follows the same refinement principle.
 
 ---
 
@@ -1651,17 +1717,24 @@ Create a custom policy only when the **failure semantics** need to change.
 | Category | Assertions |
 | --- | --- |
 | Entry points | `Is()`, `Guard()` |
-| Flow-aware null entry points | `AssertNotNull()`, `GuardNotNull()` |
+| Flow-aware null entry points | `AssertNotNull()`, `GuardNotNull()`, `AssertNotNullOrEmpty()`, `AssertNotNullOrWhiteSpace()`, `GuardNotNullOrEmpty()`, `GuardNotNullOrWhiteSpace()` |
 | Equality | `Eq()`, `NotEq()` |
 | Boolean | `True()`, `False()` |
 | Arbitrary condition | `Satisfy(bool)`, `Satisfy(Func<T, bool>)` |
 | Nullability | `NotNull()`, `Null()` |
 | Comparison | `Greater()`, `GreaterEq()`, `Less()`, `LessEq()`, `Range()` |
-| Floating point | `Approx()` |
-| Strings | `NotNullOrEmpty()`, `NotNullOrWhiteSpace()`, `NotEmpty()` |
-| Collections | `NotEmpty()`, `HaveCount()`, `HaveLength()` |
+| Numbers | `Positive()`, `NonNegative()`, `Negative()`, `Zero()`, `NonZero()`, `Even()`, `Odd()`, `DivisibleBy()` |
+| Floating point | `Approx()`, `NotNaN()`, `Finite()`, `Infinite()`, `PositiveInfinity()`, `NegativeInfinity()` |
+| Strings | `NotNullOrEmpty()`, `NotNullOrWhiteSpace()`, `NotEmpty()`, `Length()`, `MinLength()`, `MaxLength()`, `LengthInRange()`, `Contains()`, `StartsWith()`, `EndsWith()`, `Matches()` |
+| Collections | `NotEmpty()`, `Count()`, `Length()`, `MinCount()`, `MaxCount()`, `CountInRange()`, `MinLength()`, `MaxLength()`, `LengthInRange()`, `Contains()` |
+| Dictionaries | `ContainsKey()`, `NotContainsKey()` |
+| Date and time | `Kind()`, `Utc()`, `After()`, `Before()`, `NotBefore()`, `NotAfter()` (DateTime); `Positive()`, `NonNegative()`, `Zero()`, `WithinTimeout()` (TimeSpan); `Today()`, `Weekday()` (DateOnly); `Utc()`, `HaveOffset()` (DateTimeOffset) |
 | GUID | `NotBeEmpty()`, `NotBeNullOrEmpty()` |
-| Runtime type | `BeOfType<T>()` |
+| Characters | `IsLetter()`, `IsDigit()`, `IsWhiteSpace()`, `IsUpper()`, `IsLower()` |
+| Paths | `AsFile()`, `AsDirectory()`, `Exists()`, `NotExists()`, `HaveExtension()`, `NoExtension()`, `HaveFileName()`, `HaveName()`, `Absolute()`, `HaveFullPath()`, `InDirectory()`, `Empty()`, `NotEmpty()`, `Length()`, `MinLength()`, `MaxLength()`, `LengthInRange()`, `ContainsFile()`, `ContainsDirectory()` |
+| URIs | `AsUri()`, `Absolute()`, `HaveScheme()`, `HaveHost()`, `HavePort()`, `Loopback()` |
+| Network | `Loopback()`, `IPv4()`, `IPv6()` (IPAddress); `HavePort()`, `Loopback()` (IPEndPoint); `AsMailAddress()`, `HaveHost()`, `HaveUser()` (MailAddress) |
+| Runtime type | `OfType<T>()` |
 
 All assertion methods support the selected `TPolicy`, so the same rule can normally be used through `Is()`, `Guard()`, or a custom policy entry point.
 

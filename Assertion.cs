@@ -77,7 +77,7 @@ public readonly struct Assertion<T, TPolicy>
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Assertion<TExpected, TPolicy> BeOfType<TExpected>(string? message = null) {
+    public Assertion<TExpected, TPolicy> OfType<TExpected>(string? message = null) {
         if (subject is TExpected typed)
             return new Assertion<TExpected, TPolicy>(typed, context);
 
