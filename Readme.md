@@ -137,7 +137,7 @@ Builds are deterministic (`Deterministic`, `ContinuousIntegrationBuild` on CI) a
 
 For the preview package:
 ```xml
-<PackageReference Include="ValidSphere" Version="0.2.0-preview.3" />
+<PackageReference Include="ValidSphere" Version="0.2.0-preview.4" />
 ```
 
 For a source/project reference:
