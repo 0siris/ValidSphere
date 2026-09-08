@@ -1,5 +1,10 @@
 # ValidSphere
 
+[![NuGet](https://img.shields.io/nuget/v/ValidSphere.svg)](https://www.nuget.org/packages/ValidSphere)
+[![CI](https://github.com/0siris/ValidSphere/actions/workflows/ci.yml/badge.svg)](https://github.com/0siris/ValidSphere/actions/workflows/ci.yml)
+[![Deterministic](https://img.shields.io/badge/build-deterministic-brightgreen.svg)](https://learn.microsoft.com/nuget/create-packages/deterministic-packages)
+[![SourceLink](https://img.shields.io/badge/Source%20Link-enabled-brightgreen.svg)](https://github.com/dotnet/sourcelink)
+
 A lightweight, extensible assertion and guard library for modern .NET.
 
 `ValidSphere` constrains program execution to valid states by rejecting invalid inputs and runtime conditions where their constraints are known. It is runtime-first and intended for production code as well as tests, but it is not primarily a test assertion framework.
@@ -128,10 +133,11 @@ ValidSphere is not a DTO or object validation framework, a replacement for Fluen
 Add the project or package reference to the consuming project.
 The package targets `net10.0`, `net8.0` (identical API) and `netstandard2.1` (without generic-math comparisons, numeric, floating-point, and date-only checks).
 
-For the preview package:
+Builds are deterministic (`Deterministic`, `ContinuousIntegrationBuild` on CI) and SourceLink-enabled (commit in the product version, PDBs in the symbol package). Verify with `dotnet tool install -g sourcelink` followed by `sourcelink test <package>.pdb`.
 
+For the preview package:
 ```xml
-<PackageReference Include="ValidSphere" Version="0.2.0-preview.1" />
+<PackageReference Include="ValidSphere" Version="0.2.0-preview.3" />
 ```
 
 For a source/project reference:

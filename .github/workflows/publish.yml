@@ -21,7 +21,7 @@ jobs:
         run: |
           version="${GITHUB_REF_NAME#v}"
           assembly="${version%%-*}"
-          dotnet pack src/ValidSphere/ValidSphere.csproj --configuration Release --output artifacts -p:PackageVersion="$version" -p:AssemblyVersion="$assembly" -p:FileVersion="$assembly" -p:InformationalVersion="$version"
+          dotnet pack src/ValidSphere/ValidSphere.csproj --configuration Release --output artifacts -p:PackageVersion="$version" -p:AssemblyVersion="$assembly" -p:FileVersion="$assembly" -p:InformationalVersion="$version" -p:ContinuousIntegrationBuild=true
       - name: Authenticate with NuGet.org
         id: nuget
         uses: NuGet/login@v1.2.0
