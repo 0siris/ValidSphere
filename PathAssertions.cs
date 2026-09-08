@@ -324,7 +324,7 @@ public static class PathAssertions {
         where TPolicy : struct, IAssertionPolicy {
         ThrowHelper.ThrowIfNull(name, nameof(name));
 
-        if (!Path.GetFileName(Path.TrimEndingDirectorySeparator(assertion.Value.Value)).Equals(name, comparison))
+        if (!Path.GetFileName(TrimTrailingSeparator(assertion.Value.Value)).Equals(name, comparison))
             TPolicy.Fail(assertion.Context, message ?? $"Directory must have name '{name}'.");
 
         return assertion;
@@ -705,9 +705,20 @@ public static class PathAssertions {
 
         var parent = Path.GetDirectoryName(Path.GetFullPath(assertion.Value.Value));
 
-        if (parent is null || !parent.Equals(Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory)), comparison))
+        if (parent is null || !parent.Equals(TrimTrailingSeparator(Path.GetFullPath(directory)), comparison))
             TPolicy.Fail(assertion.Context, message ?? $"File must be in directory '{directory}'.");
 
         return assertion;
+    }
+
+    /// <summary>
+    ///     Removes a single trailing directory separator, if present. Never touches roots.
+    /// </summary>
+    private static string TrimTrailingSeparator(string path) {
+        if (path.Length > 1
+            && (path[path.Length - 1] == Path.DirectorySeparatorChar
+                || path[path.Length - 1] == Path.AltDirectorySeparatorChar))
+            return path.Substring(0, path.Length - 1);
+        return path;
     }
 }

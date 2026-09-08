@@ -32,7 +32,17 @@ public static class MailAssertions {
         string? message = null
     )
         where TPolicy : struct, IAssertionPolicy {
+#if NETSTANDARD2_1
+        MailAddress? address = null;
+        try {
+            address = new MailAddress(assertion.Value);
+        }
+        catch (FormatException) { }
+        catch (ArgumentException) { }
+        if (address is null)
+#else
         if (!MailAddress.TryCreate(assertion.Value, out var address) || address is null)
+#endif
             TPolicy.Fail(assertion.Context, message ?? "String must be a valid mail address.");
 
         return new Assertion<MailAddress, TPolicy>(address, assertion.Context);

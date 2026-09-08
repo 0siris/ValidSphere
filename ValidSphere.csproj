@@ -2,12 +2,10 @@
 
   <PropertyGroup>
     <TargetFrameworks>net10.0;net8.0</TargetFrameworks>
-    <LangVersion>latest</LangVersion>
+    <!-- The netstandard2.1 lib asset is contributed by the sidecar project, so NuGet cannot infer its (empty) dependency group. -->
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
 
     <RootNamespace>ValidSphere</RootNamespace>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <Version>0.1.0-preview.2</Version>
     <Title>ValidSphere - Runtime Guards and Invariants for .NET</Title>
     <Authors>0siris</Authors>
     <Description>A lightweight, extensible assertion and guard library for modern .NET.</Description>
@@ -22,5 +20,19 @@
   <ItemGroup>
     <None Include="Readme.md" Pack="true" PackagePath="\" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="ValidSphere.Ns21/**/*.cs" />
+    <EmbeddedResource Remove="ValidSphere.Ns21/**/*" />
+    <None Remove="ValidSphere.Ns21/**/*" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="ValidSphere.Ns21\ValidSphere.Ns21.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
 
+  <Target Name="AddNs21ToPackage" BeforeTargets="_GetPackageFiles">
+    <MSBuild Projects="ValidSphere.Ns21\ValidSphere.Ns21.csproj" Targets="Build" Properties="Configuration=$(Configuration)" />
+    <ItemGroup>
+      <None Include="ValidSphere.Ns21\bin\$(Configuration)\netstandard2.1\ValidSphere.dll" Pack="true" PackagePath="lib/netstandard2.1" />
+    </ItemGroup>
+  </Target>
 </Project>

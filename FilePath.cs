@@ -101,7 +101,15 @@ public readonly struct FilePath {
     /// <param name="overwrite">
     ///     <see langword="true" /> to overwrite an existing destination; otherwise <see langword="false" />.
     /// </param>
-    public void MoveTo(string dest, bool overwrite = false) => File.Move(Value, dest, overwrite);
+    public void MoveTo(string dest, bool overwrite = false) {
+#if NETSTANDARD2_1
+        if (overwrite && File.Exists(dest))
+            File.Delete(dest);
+        File.Move(Value, dest);
+#else
+        File.Move(Value, dest, overwrite);
+#endif
+    }
 
     /// <summary>
     ///     Opens the file for reading.
