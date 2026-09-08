@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net10.0;net8.0</TargetFrameworks>
+    <!-- The netstandard2.1 lib asset is contributed by the sidecar project, so NuGet cannot infer its (empty) dependency group. -->
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+
+    <RootNamespace>ValidSphere</RootNamespace>
+    <Title>ValidSphere - Runtime Guards and Invariants for .NET</Title>
+    <Authors>0siris</Authors>
+    <Description>A lightweight, extensible assertion and guard library for modern .NET.</Description>
+    <PackageTags>guard;guard-clauses;assertions;invariants;runtime-validation;preconditions;nullability;dotnet</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>Readme.md</PackageReadmeFile>
+    <PackageProjectUrl>https://github.com/0siris/ValidSphere</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/0siris/ValidSphere</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\Readme.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+  <ItemGroup>
+  <!-- Build coupling without compile coupling: ReferenceOutputAssembly="false" builds the sidecar on every build -->
+  <!-- but does not use its DLL as a reference. true (the default) would not work here: both assemblies define -->
+  <!-- the same types (ValidSphere.Assertion<T, ...> etc.), which would cause duplicates/ambiguities. The output -->
+  <!-- is only used during packing (AddNs21ToPackage below). -->
+    <ProjectReference Include="..\ValidSphere.Ns21\ValidSphere.Ns21.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <Target Name="AddNs21ToPackage" BeforeTargets="_GetPackageFiles">
+    <MSBuild Projects="..\ValidSphere.Ns21\ValidSphere.Ns21.csproj" Targets="Build" Properties="Configuration=$(Configuration)" />
+    <ItemGroup>
+      <None Include="..\ValidSphere.Ns21\bin\$(Configuration)\netstandard2.1\ValidSphere.dll" Pack="true" PackagePath="lib/netstandard2.1" />
+    </ItemGroup>
+  </Target>
+</Project>

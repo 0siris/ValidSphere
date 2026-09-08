@@ -276,7 +276,7 @@ public static class CoreAssertions {
         [CallerArgumentExpression("predicate")]
         string? predicateExpression = null
     ) where TPolicy : struct, IAssertionPolicy {
-        ArgumentNullException.ThrowIfNull(predicate);
+        ThrowHelper.ThrowIfNull(predicate, nameof(predicate));
 
         if (!predicate(assertion.Value)) {
             TPolicy.Fail(assertion.Context,
@@ -305,7 +305,7 @@ public static class CoreAssertions {
         [CallerArgumentExpression("predicate")]
         string? predicateExpression = null
     ) where TPolicy : struct, IAssertionPolicy {
-        ArgumentNullException.ThrowIfNull(predicate);
+        ThrowHelper.ThrowIfNull(predicate, nameof(predicate));
 
         if (!predicate(assertion.Value)) {
             TPolicy.Fail(assertion.Context, messageFactory(assertion.Context));

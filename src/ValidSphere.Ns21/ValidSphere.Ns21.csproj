@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>ValidSphere</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <DefaultItemExcludes>$(DefaultItemExcludes);gen/**/*.cs</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <UsingTask TaskName="GenerateNs21Sources" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <SourceDir ParameterType="System.String" Required="true" />
+      <GenDir ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+        var skip = new[] { "ComparisonAssertions.cs", "NumericAssertions.cs", "FloatingPointAssertions.cs", "DateOnlyAssertions.cs", "AssertionPolicy.cs" };
+        if (Directory.Exists(GenDir)) Directory.Delete(GenDir, true);
+        Directory.CreateDirectory(GenDir);
+        foreach (var file in Directory.GetFiles(SourceDir, "*.cs")) {
+          var name = Path.GetFileName(file);
+          if (Array.IndexOf(skip, name) >= 0) continue;
+          var text = File.ReadAllText(file);
+          text = Regex.Replace(text, @"TPolicy\.(Fail|FailNull|FailOutOfRange)\(", "default(TPolicy).$1(");
+          text = Regex.Replace(text, @"IsPolicy\.(Fail|FailNull|FailOutOfRange)\(", "default(IsPolicy).$1(");
+          text = Regex.Replace(text, @"GuardPolicy\.(Fail|FailNull|FailOutOfRange)\(", "default(GuardPolicy).$1(");
+          File.WriteAllText(Path.Combine(GenDir, name), text);
+        }
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="GenerateSources" BeforeTargets="BeforeBuild">
+    <GenerateNs21Sources SourceDir="$(MSBuildProjectDirectory)\..\ValidSphere" GenDir="$(MSBuildProjectDirectory)\gen" />
+    <ItemGroup>
+      <Compile Include="gen/**/*.cs" />
+    </ItemGroup>
+  </Target>
+
+</Project>

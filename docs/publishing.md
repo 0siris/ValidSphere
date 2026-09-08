@@ -32,7 +32,7 @@ See [NuGet trusted publishing](https://learn.microsoft.com/nuget/nuget-org/trust
 
 ## Create a preview release
 
-1. Prepare the release on a short-lived branch from `main`: update `<Version>` in `ValidSphere.csproj` and the installation example in `Readme.md`, then open a pull request `main` → `release`.
+1. Prepare the release on a short-lived branch from `main`: update `<Version>` in `Directory.Build.props` and the installation example in `Readme.md`, then open a pull request `main` → `release`.
 2. Merge the pull request once the `build` check is green. GitHub blocks the merge otherwise — `release` accepts no direct pushes, not even for administrators.
 3. Confirm that `origin/release` contains the merge commit:
 
@@ -40,8 +40,8 @@ See [NuGet trusted publishing](https://learn.microsoft.com/nuget/nuget-org/trust
    git fetch origin
    git status --short --branch
    git log -1 --oneline origin/release
-   dotnet build ValidSphere.csproj --configuration Release
-   dotnet pack ValidSphere.csproj --configuration Release --output artifacts
+   dotnet build ValidSphere.slnx --configuration Release
+   dotnet pack src/ValidSphere/ValidSphere.csproj --configuration Release --output artifacts
    ```
 
 4. Create a draft targeting that exact commit. Replace the version for each release:

@@ -16,7 +16,7 @@ public readonly struct DirectoryPath {
     /// <param name="value">The directory path. Must not be <see langword="null" />.</param>
     /// <exception cref="ArgumentNullException"><paramref name="value" /> is <see langword="null" />.</exception>
     public DirectoryPath(string value) {
-        ArgumentNullException.ThrowIfNull(value);
+        ThrowHelper.ThrowIfNull(value, nameof(value));
         Value = value;
     }
 
