@@ -88,7 +88,7 @@ public static class UriAssertions {
         string? message = null
     )
         where TPolicy : struct, IAssertionPolicy {
-        ArgumentNullException.ThrowIfNull(scheme);
+        ThrowHelper.ThrowIfNull(scheme, nameof(scheme));
 
         var value = assertion.Value;
 
@@ -122,7 +122,7 @@ public static class UriAssertions {
         string? message = null
     )
         where TPolicy : struct, IAssertionPolicy {
-        ArgumentNullException.ThrowIfNull(host);
+        ThrowHelper.ThrowIfNull(host, nameof(host));
 
         var value = assertion.Value;
 

@@ -73,6 +73,7 @@ BenchmarkDotNet.Artifacts/
 project.lock.json
 project.fragment.lock.json
 artifacts/
+src/ValidSphere.Ns21/gen/
 
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt

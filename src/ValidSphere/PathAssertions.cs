@@ -136,7 +136,7 @@ public static class PathAssertions {
         string? message = null
     )
         where TPolicy : struct, IAssertionPolicy {
-        ArgumentNullException.ThrowIfNull(extensions);
+        ThrowHelper.ThrowIfNull(extensions, nameof(extensions));
 
         if (extensions.Length == 0)
             throw new ArgumentException("At least one extension is required.", nameof(extensions));
@@ -176,7 +176,7 @@ public static class PathAssertions {
         string? message = null
     )
         where TPolicy : struct, IAssertionPolicy {
-        ArgumentNullException.ThrowIfNull(fileName);
+        ThrowHelper.ThrowIfNull(fileName, nameof(fileName));
 
         if (!Path.GetFileName(assertion.Value.Value).Equals(fileName, comparison))
             TPolicy.Fail(assertion.Context, message ?? $"Path must have file name '{fileName}'.");
@@ -322,9 +322,9 @@ public static class PathAssertions {
         string? message = null
     )
         where TPolicy : struct, IAssertionPolicy {
-        ArgumentNullException.ThrowIfNull(name);
+        ThrowHelper.ThrowIfNull(name, nameof(name));
 
-        if (!Path.GetFileName(Path.TrimEndingDirectorySeparator(assertion.Value.Value)).Equals(name, comparison))
+        if (!Path.GetFileName(TrimTrailingSeparator(assertion.Value.Value)).Equals(name, comparison))
             TPolicy.Fail(assertion.Context, message ?? $"Directory must have name '{name}'.");
 
         return assertion;
@@ -585,7 +585,7 @@ public static class PathAssertions {
         string? message = null
     )
         where TPolicy : struct, IAssertionPolicy {
-        ArgumentNullException.ThrowIfNull(fileName);
+        ThrowHelper.ThrowIfNull(fileName, nameof(fileName));
 
         if (!File.Exists(Path.Combine(assertion.Value.Value, fileName)))
             TPolicy.Fail(assertion.Context, message ?? $"Directory must contain file '{fileName}'.");
@@ -615,7 +615,7 @@ public static class PathAssertions {
         string? message = null
     )
         where TPolicy : struct, IAssertionPolicy {
-        ArgumentNullException.ThrowIfNull(directoryName);
+        ThrowHelper.ThrowIfNull(directoryName, nameof(directoryName));
 
         if (!Directory.Exists(Path.Combine(assertion.Value.Value, directoryName)))
             TPolicy.Fail(assertion.Context, message ?? $"Directory must contain directory '{directoryName}'.");
@@ -643,7 +643,7 @@ public static class PathAssertions {
         string? message = null
     )
         where TPolicy : struct, IAssertionPolicy {
-        ArgumentNullException.ThrowIfNull(expectedFullPath);
+        ThrowHelper.ThrowIfNull(expectedFullPath, nameof(expectedFullPath));
 
         if (!Path.GetFullPath(assertion.Value.Value).Equals(Path.GetFullPath(expectedFullPath), comparison))
             TPolicy.Fail(assertion.Context, message ?? $"Path must have full path '{expectedFullPath}'.");
@@ -672,7 +672,7 @@ public static class PathAssertions {
         string? message = null
     )
         where TPolicy : struct, IAssertionPolicy {
-        ArgumentNullException.ThrowIfNull(expectedFullPath);
+        ThrowHelper.ThrowIfNull(expectedFullPath, nameof(expectedFullPath));
 
         if (!Path.GetFullPath(assertion.Value.Value).Equals(Path.GetFullPath(expectedFullPath), comparison))
             TPolicy.Fail(assertion.Context, message ?? $"Path must have full path '{expectedFullPath}'.");
@@ -701,13 +701,24 @@ public static class PathAssertions {
         string? message = null
     )
         where TPolicy : struct, IAssertionPolicy {
-        ArgumentNullException.ThrowIfNull(directory);
+        ThrowHelper.ThrowIfNull(directory, nameof(directory));
 
         var parent = Path.GetDirectoryName(Path.GetFullPath(assertion.Value.Value));
 
-        if (parent is null || !parent.Equals(Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory)), comparison))
+        if (parent is null || !parent.Equals(TrimTrailingSeparator(Path.GetFullPath(directory)), comparison))
             TPolicy.Fail(assertion.Context, message ?? $"File must be in directory '{directory}'.");
 
         return assertion;
+    }
+
+    /// <summary>
+    ///     Removes a single trailing directory separator, if present. Never touches roots.
+    /// </summary>
+    private static string TrimTrailingSeparator(string path) {
+        if (path.Length > 1
+            && (path[path.Length - 1] == Path.DirectorySeparatorChar
+                || path[path.Length - 1] == Path.AltDirectorySeparatorChar))
+            return path.Substring(0, path.Length - 1);
+        return path;
     }
 }

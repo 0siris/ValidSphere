@@ -1,6 +1,6 @@
 # Publishing ValidSphere
 
-ValidSphere is published to NuGet.org by the `Publish NuGet` GitHub Actions workflow. Publishing a GitHub release triggers the workflow; saving a draft does not.
+ValidSphere is published to NuGet.org by the `Publish NuGet` GitHub Actions workflow. Releases are cut from the protected `release` branch, which accepts merges only via pull request with a green CI build. Publishing a GitHub release triggers the workflow; saving a draft does not.
 
 ## One-time setup
 
@@ -32,23 +32,24 @@ See [NuGet trusted publishing](https://learn.microsoft.com/nuget/nuget-org/trust
 
 ## Create a preview release
 
-1. Update `<Version>` in `ValidSphere.csproj` and the installation example in `Readme.md`, then commit and push the change to `main`.
-2. Confirm that `origin/main` contains the intended release commit:
+1. Prepare the release on a short-lived branch from `main`: update the installation example in `Readme.md` (the package version comes from the release tag), then open a pull request `main` → `release`.
+2. Merge the pull request once the `build` check is green. GitHub blocks the merge otherwise — `release` accepts no direct pushes, not even for administrators.
+3. Confirm that `origin/release` contains the merge commit:
 
    ```powershell
    git fetch origin
    git status --short --branch
-   git log -1 --oneline origin/main
-   dotnet build ValidSphere.csproj --configuration Release
-   dotnet pack ValidSphere.csproj --configuration Release --output artifacts
+   git log -1 --oneline origin/release
+   dotnet build ValidSphere.slnx --configuration Release
+   dotnet pack src/ValidSphere/ValidSphere.csproj --configuration Release --output artifacts
    ```
 
-3. Create a draft targeting that exact commit. Replace the version for each release:
+4. Create a draft targeting that exact commit. Replace the version for each release:
 
    ```powershell
    $version = "0.1.0-preview.2"
    $tag = "v$version"
-   $commit = git rev-parse origin/main
+   $commit = git rev-parse origin/release
 
    gh release create $tag `
      --repo 0siris/ValidSphere `
@@ -60,8 +61,8 @@ See [NuGet trusted publishing](https://learn.microsoft.com/nuget/nuget-org/trust
      --latest=false
    ```
 
-4. Review the draft title, notes, tag, target commit, and pre-release flag on GitHub.
-5. Publish the reviewed draft:
+5. Review the draft title, notes, tag, target commit, and pre-release flag on GitHub.
+6. Publish the reviewed draft:
 
    ```powershell
    gh release edit $tag --repo 0siris/ValidSphere --draft=false

@@ -290,7 +290,7 @@ public static class StringAssertions {
         string? message = null
     )
         where TPolicy : struct, IAssertionPolicy {
-        ArgumentNullException.ThrowIfNull(substring);
+        ThrowHelper.ThrowIfNull(substring, nameof(substring));
 
         if (!assertion.Value.Contains(substring, comparison)) {
             TPolicy.Fail(assertion.Context, message ?? $"String must contain '{substring}'.");
@@ -320,7 +320,7 @@ public static class StringAssertions {
         string? message = null
     )
         where TPolicy : struct, IAssertionPolicy {
-        ArgumentNullException.ThrowIfNull(prefix);
+        ThrowHelper.ThrowIfNull(prefix, nameof(prefix));
 
         if (!assertion.Value.StartsWith(prefix, comparison)) {
             TPolicy.Fail(assertion.Context, message ?? $"String must start with '{prefix}'.");
@@ -350,7 +350,7 @@ public static class StringAssertions {
         string? message = null
     )
         where TPolicy : struct, IAssertionPolicy {
-        ArgumentNullException.ThrowIfNull(suffix);
+        ThrowHelper.ThrowIfNull(suffix, nameof(suffix));
 
         if (!assertion.Value.EndsWith(suffix, comparison)) {
             TPolicy.Fail(assertion.Context, message ?? $"String must end with '{suffix}'.");
@@ -378,7 +378,7 @@ public static class StringAssertions {
         string? message = null
     )
         where TPolicy : struct, IAssertionPolicy {
-        ArgumentNullException.ThrowIfNull(regex);
+        ThrowHelper.ThrowIfNull(regex, nameof(regex));
 
         if (!regex.IsMatch(assertion.Value)) {
             TPolicy.Fail(assertion.Context, message ?? "String must match the required pattern.");
