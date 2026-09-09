@@ -139,7 +139,7 @@ public static class EnumAssertions {
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Assertion<TEnum, IsPolicy> Enum<TEnum>(
-        this Assertion<string, IsPolicy> assertion,
+        this Assertion<string?, IsPolicy> assertion,
         bool ignoreCase = false,
         string? message = null
     )
@@ -225,7 +225,7 @@ public static class EnumAssertions {
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TEnum AsEnum<TEnum>(
-        this Assertion<string, IsPolicy> assertion,
+        this Assertion<string?, IsPolicy> assertion,
         bool ignoreCase = false,
         string? message = null
     )

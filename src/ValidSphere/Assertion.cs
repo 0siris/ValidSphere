@@ -225,8 +225,8 @@ public static class AssertionEntryExtensions {
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<T, IsPolicy> Is<T>(
-        this T subject,
+    public static Assertion<T?, IsPolicy> Is<T>(
+        this T? subject,
         [CallerArgumentExpression("subject")] string? expression = null,
         [CallerMemberName] string? memberName = null,
         [CallerFilePath] string? filePath = null,
@@ -253,8 +253,8 @@ public static class AssertionEntryExtensions {
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<T, GuardPolicy> Guard<T>(
-        this T subject,
+    public static Assertion<T?, GuardPolicy> Guard<T>(
+        this T? subject,
         [CallerArgumentExpression("subject")] string? expression = null,
         [CallerMemberName] string? memberName = null,
         [CallerFilePath] string? filePath = null,
