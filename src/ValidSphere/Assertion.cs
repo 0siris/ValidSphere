@@ -189,8 +189,7 @@ public static class AssertionEntryExtensions {
     ///     The source line number of the caller, supplied automatically by the compiler.
     /// </param>
     /// <returns>
-    ///     An assertion containing the validated non-null value for further fluent assertions
-    ///     or implicit extraction of the value.
+    ///     The validated non-null value.
     /// </returns>
     /// <exception cref="AssertException">
     ///     <paramref name="subject"/> is <see langword="null" />.
@@ -201,7 +200,7 @@ public static class AssertionEntryExtensions {
     ///     original reference to non-null after a successful call.
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<T, IsPolicy> AssertNotNull<T>(
+    public static T AsNotNull<T>(
         [NotNull] this T? subject,
         string? message = null,
         [CallerArgumentExpression("subject")] string? expression = null,
@@ -215,7 +214,7 @@ public static class AssertionEntryExtensions {
         if (subject is null)
             IsPolicy.FailNull(context, message ?? "Value must not be null");
 
-        return new(subject, context);
+        return subject;
     }
 
     /// <summary>
@@ -244,14 +243,14 @@ public static class AssertionEntryExtensions {
     ///     The source line number of the caller, supplied automatically by the compiler.
     /// </param>
     /// <returns>
-    ///     An assertion containing the underlying non-null value.
+    ///     The underlying non-null value.
     /// </returns>
     /// <exception cref="AssertException">
     ///     <paramref name="subject"/> has no value.
     /// </exception>
     [DebuggerStepThrough]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<T, IsPolicy> AssertNotNull<T>(
+    public static T AsNotNull<T>(
         [NotNull] this T? subject,
         string? message = null,
         [CallerArgumentExpression("subject")] string? expression = null,
@@ -271,7 +270,7 @@ public static class AssertionEntryExtensions {
                                   context,
                                   message ?? "Value must have a value.");
 
-        return new(subject.GetValueOrDefault(), context);
+        return subject.GetValueOrDefault();
     }
 
 
@@ -302,8 +301,7 @@ public static class AssertionEntryExtensions {
     ///     The source line number of the caller, supplied automatically by the compiler.
     /// </param>
     /// <returns>
-    ///     An assertion containing the validated non-null value for further fluent assertions
-    ///     or implicit extraction of the value.
+    ///     The validated non-null value.
     /// </returns>
     /// <exception cref="ArgumentNullException">
     ///     <paramref name="subject"/> is <see langword="null" />.
@@ -314,7 +312,7 @@ public static class AssertionEntryExtensions {
     ///     <paramref name="subject"/> is non-null after a successful call.
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<T, GuardPolicy> GuardNotNull<T>(
+    public static T AsGuardNotNull<T>(
         [NotNull] this T? subject,
         string? message = null,
         [CallerArgumentExpression("subject")] string? expression = null,
@@ -327,7 +325,7 @@ public static class AssertionEntryExtensions {
         if (subject is null)
             GuardPolicy.FailNull(context, message ?? "Value must not be null");
 
-        return new(subject, context);
+        return subject;
     }
 
     /// <summary>
@@ -356,14 +354,14 @@ public static class AssertionEntryExtensions {
 ///     The source line number of the caller, supplied automatically by the compiler.
 /// </param>
 /// <returns>
-///     An assertion containing the underlying non-null value.
+///     The underlying non-null value.
 /// </returns>
 /// <exception cref="ArgumentNullException">
 ///     <paramref name="subject"/> has no value.
 /// </exception>
 [DebuggerStepThrough]
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public static Assertion<T, GuardPolicy> GuardNotNull<T>(
+public static T AsGuardNotNull<T>(
     [NotNull] this T? subject,
     string? message = null,
     [CallerArgumentExpression("subject")] string? expression = null,
@@ -383,6 +381,6 @@ public static Assertion<T, GuardPolicy> GuardNotNull<T>(
             context,
             message ?? "Value must have a value.");
 
-    return new(subject.GetValueOrDefault(), context);
+    return subject.GetValueOrDefault();
 }
 }

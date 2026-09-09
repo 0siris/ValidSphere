@@ -249,7 +249,7 @@ retryCount
 
 This allows public APIs to use the fluent assertion syntax while still following normal .NET argument-exception conventions.
 
-If a nullable variable should also be recognized as non-null by C# nullable flow analysis after the call, use `GuardNotNull()` as described below.
+If a nullable variable should also be recognized as non-null by C# nullable flow analysis after the call, use `AsGuardNotNull()` as described below.
 
 ---
 
@@ -274,20 +274,20 @@ For example:
 ```csharp
 public Mesh Process(Mesh? mesh, float tolerance)
 {
-    mesh.GuardNotNull();
+    mesh.AsGuardNotNull();
     tolerance.Guard().Greater(0);
 
     var result = ProcessInternal(mesh, tolerance);
 
-    result.AssertNotNull();
+    result.AsNotNull();
 
     return result;
 }
 ```
 
-`Guard()` and `GuardNotNull()` validate the caller contract.
+`Guard()` and `AsGuardNotNull()` validate the caller contract.
 
-`Is()` and `AssertNotNull()` validate assumptions and invariants made by the implementation.
+`Is()` and `AsNotNull()` validate assumptions and invariants made by the implementation.
 
 ---
 
@@ -357,7 +357,7 @@ When the original nullable variable is used again afterwards, prefer the flow-an
 ```csharp
 string? name = GetName();
 
-name.GuardNotNull();
+name.AsGuardNotNull();
 
 Process(name); // no nullable warning
 ```
@@ -368,12 +368,12 @@ The two forms therefore solve slightly different problems:
 Guard().NotNull()
     → refines the returned Assertion<T, TPolicy>
 
-GuardNotNull()
-    → refines the returned assertion
+AsGuardNotNull()
+    → returns the validated non-null value directly
     → also informs nullable flow analysis about the original variable
 ```
 
-The same principle applies to `AssertNotNull()`.
+The same principle applies to `AsNotNull()`.
 
 ---
 
@@ -533,8 +533,8 @@ After `NotNull()`, the assertion contains an `int` rather than `int?`.
 In addition to the fluent null assertion, the library provides two direct null-check entry points:
 
 ```csharp
-value.AssertNotNull();
-value.GuardNotNull();
+value.AsNotNull();
+value.AsGuardNotNull();
 ```
 
 Both exist for nullable reference types and nullable value types.
@@ -546,7 +546,7 @@ For a reference type:
 ```csharp
 Customer? customer = GetCustomer();
 
-customer.GuardNotNull();
+customer.AsGuardNotNull();
 
 Handle(customer); // customer is known to be non-null
 ```
@@ -556,7 +556,7 @@ For a nullable value type:
 ```csharp
 int? count = GetCount();
 
-count.GuardNotNull();
+count.AsGuardNotNull();
 
 var value = count.Value;
 ```
@@ -565,22 +565,21 @@ The direct methods differ only in failure semantics:
 
 | Entry point | Intended use | Failure |
 | --- | --- | --- |
-| `AssertNotNull()` | Runtime assertion / invariant | `AssertException` |
-| `GuardNotNull()` | Argument / precondition | `ArgumentNullException` |
+| `AsNotNull()` | Runtime assertion / invariant | `AssertException` |
+| `AsGuardNotNull()` | Argument / precondition | `ArgumentNullException` |
 
-Both still return an `Assertion<T, TPolicy>`, so they can start a fluent chain:
+Both return the validated non-null value directly. To start a fluent chain instead, refine through `Is()`/`Guard()` first:
 
 ```csharp
 string? name = GetName();
 
-name.GuardNotNull()
-    .NotEmpty();
+name.Guard().NotNullOrEmpty();
 ```
 
 They can also be used directly inside expressions:
 
 ```csharp
-Process(name.GuardNotNull());
+Process(name.AsGuardNotNull());
 ```
 
 Use the direct variants when the nullable state of the **original variable** matters after the call.
@@ -690,11 +689,10 @@ public User(string? name)
 }
 ```
 
-If the original `name` variable must also be considered non-null afterwards, use `GuardNotNull()` first:
+If the original `name` variable must also be considered non-null afterwards, use `AsGuardNotNull()` first:
 
 ```csharp
-name.GuardNotNull()
-    .NotEmpty();
+name.Guard().NotNullOrEmpty();
 ```
 
 ---
@@ -866,7 +864,7 @@ The built-in default diagnostic strings are created only in the failure branch.
 
 ## Caller Information and Debugging
 
-`Is()`, `Guard()`, `AssertNotNull()`, and `GuardNotNull()` capture source information automatically.
+`Is()`, `Guard()`, `AsNotNull()`, and `AsGuardNotNull()` capture source information automatically.
 
 The captured `AssertionContext` contains:
 
@@ -1684,7 +1682,7 @@ public Mesh Transform(
     Matrix4x4 transform,
     float tolerance)
 {
-    mesh.GuardNotNull();
+    mesh.AsGuardNotNull();
     tolerance.Guard().Greater(0);
 
     // mesh is known to be non-null here
@@ -1697,7 +1695,7 @@ Use `Is()` for internal assumptions and invariants:
 ```csharp
 var result = ComputeResult();
 
-result.AssertNotNull();
+result.AsNotNull();
 result.Vertices.Is().NotEmpty();
 ```
 
@@ -1727,7 +1725,7 @@ Create a custom policy only when the **failure semantics** need to change.
 | Category | Assertions |
 | --- | --- |
 | Entry points | `Is()`, `Guard()` |
-| Flow-aware null entry points | `AssertNotNull()`, `GuardNotNull()`, `AssertNotNullOrEmpty()`, `AssertNotNullOrWhiteSpace()`, `GuardNotNullOrEmpty()`, `GuardNotNullOrWhiteSpace()` |
+| Flow-aware null entry points | `AsNotNull()`, `AsGuardNotNull()`, `AsNotNullOrEmpty()`, `AsNotNullOrWhiteSpace()`, `AsNotEmpty()`, `AsGuardNotNullOrEmpty()`, `AsGuardNotNullOrWhiteSpace()`, `AsGuardNotEmpty()` |
 | Equality | `Eq()`, `NotEq()` |
 | Boolean | `True()`, `False()` |
 | Arbitrary condition | `Satisfy(bool)`, `Satisfy(Func<T, bool>)` |
