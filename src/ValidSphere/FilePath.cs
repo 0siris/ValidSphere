@@ -7,7 +7,7 @@ namespace ValidSphere;
 /// </summary>
 /// <remarks>
 ///     The struct carries the raw path and forwards a curated set of members to the static <see cref="File" /> API,
-///     so assertions and I/O can be combined in one fluent chain: <c>path.Is().AsFile().Exists()</c>, <c>file.ReadAllText()</c>.
+///     so assertions and I/O can be combined in one fluent chain: <c>path.Is().File().Exists()</c>, <c>file.ReadAllText()</c>.
 /// </remarks>
 public readonly struct FilePath {
     /// <summary>

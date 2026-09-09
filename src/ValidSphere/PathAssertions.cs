@@ -9,36 +9,116 @@ namespace ValidSphere;
 /// </summary>
 /// <remarks>
 ///     Strings switch into file or directory mode through <see cref="AsFile{TPolicy}(Assertion{string,TPolicy},string?)" />
-///     and <see cref="AsDirectory{TPolicy}(Assertion{string,TPolicy},string?)" />, and all path checks run on those
+///     and <see cref="AsDirectory{TPolicy}(Assertion{string,TPolicy},string?)" />, which extract the raw
+///     <see cref="FilePath" />/<see cref="DirectoryPath" /> carriers; chainable path assertions start at
+///     <c>path.Is().File()</c> and <c>path.Is().Directory()</c>. All path checks run on those
 ///     mode types so file semantics are never applied to a directory and vice versa.
 /// </remarks>
 public static class PathAssertions {
     /// <summary>
-    ///     Switches the string assertion into file mode without any validation.
+    ///     Validates the asserted path is not <see langword="null" /> and extracts the raw <see cref="FilePath" /> carrier.
     /// </summary>
     /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
     /// <param name="assertion">The current assertion.</param>
-    /// <returns>An assertion over a <see cref="FilePath" />.</returns>
+    /// <param name="message">
+    ///     An optional custom failure message for the null branch. When <see langword="null" />, the default message is used.
+    /// </param>
+    /// <returns>The raw <see cref="FilePath" />.</returns>
+    /// <remarks>
+    ///     Terminal extractor without further validation: for chainable file assertions use <c>path.Is().File()</c> instead.
+    /// </remarks>
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<FilePath, TPolicy> AsFile<TPolicy>(this Assertion<string, TPolicy> assertion)
+    public static FilePath AsFile<TPolicy>(this Assertion<string, TPolicy> assertion, string? message = null)
         where TPolicy : struct, IAssertionPolicy {
-        return new Assertion<FilePath, TPolicy>(new FilePath(assertion.Value), assertion.Context);
+        var value = assertion.Value;
+
+        if (value is null)
+            TPolicy.FailNull(assertion.Context, message ?? "Path must not be null.");
+
+        return new FilePath(value);
     }
 
     /// <summary>
-    ///     Switches the string assertion into directory mode without any validation.
+    ///     Validates the asserted path is not <see langword="null" /> and extracts the raw <see cref="DirectoryPath" /> carrier.
     /// </summary>
     /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
     /// <param name="assertion">The current assertion.</param>
-    /// <returns>An assertion over a <see cref="DirectoryPath" />.</returns>
+    /// <param name="message">
+    ///     An optional custom failure message for the null branch. When <see langword="null" />, the default message is used.
+    /// </param>
+    /// <returns>The raw <see cref="DirectoryPath" />.</returns>
+    /// <remarks>
+    ///     Terminal extractor without further validation: for chainable directory assertions use <c>path.Is().Directory()</c> instead.
+    /// </remarks>
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<DirectoryPath, TPolicy> AsDirectory<TPolicy>(this Assertion<string, TPolicy> assertion)
+    public static DirectoryPath AsDirectory<TPolicy>(this Assertion<string, TPolicy> assertion, string? message = null)
         where TPolicy : struct, IAssertionPolicy {
-        return new Assertion<DirectoryPath, TPolicy>(new DirectoryPath(assertion.Value), assertion.Context);
+        var value = assertion.Value;
+
+        if (value is null)
+            TPolicy.FailNull(assertion.Context, message ?? "Path must not be null.");
+
+        return new DirectoryPath(value);
+    }
+
+    /// <summary>
+    ///     Switches the asserted path into file mode and returns a chainable file assertion.
+    /// </summary>
+    /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
+    /// <param name="assertion">The current assertion.</param>
+    /// <param name="message">
+    ///     An optional custom failure message for the null branch. When <see langword="null" />, the default message is used.
+    /// </param>
+    /// <returns>An assertion over the <see cref="FilePath" />.</returns>
+    /// <remarks>
+    ///     Chain entry without further validation: for the raw carrier use <c>AsFile()</c> instead.
+    /// </remarks>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<FilePath, TPolicy> File<TPolicy>(
+        this Assertion<string, TPolicy> assertion,
+        string? message = null
+    )
+        where TPolicy : struct, IAssertionPolicy {
+        var value = assertion.Value;
+
+        if (value is null)
+            TPolicy.FailNull(assertion.Context, message ?? "Path must not be null.");
+
+        return new Assertion<FilePath, TPolicy>(new FilePath(value), assertion.Context);
+    }
+
+    /// <summary>
+    ///     Switches the asserted path into directory mode and returns a chainable directory assertion.
+    /// </summary>
+    /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
+    /// <param name="assertion">The current assertion.</param>
+    /// <param name="message">
+    ///     An optional custom failure message for the null branch. When <see langword="null" />, the default message is used.
+    /// </param>
+    /// <returns>An assertion over the <see cref="DirectoryPath" />.</returns>
+    /// <remarks>
+    ///     Chain entry without further validation: for the raw carrier use <c>AsDirectory()</c> instead.
+    /// </remarks>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<DirectoryPath, TPolicy> Directory<TPolicy>(
+        this Assertion<string, TPolicy> assertion,
+        string? message = null
+    )
+        where TPolicy : struct, IAssertionPolicy {
+        var value = assertion.Value;
+
+        if (value is null)
+            TPolicy.FailNull(assertion.Context, message ?? "Path must not be null.");
+
+        return new Assertion<DirectoryPath, TPolicy>(new DirectoryPath(value), assertion.Context);
     }
 
     /// <summary>
@@ -58,7 +138,7 @@ public static class PathAssertions {
         string? message = null
     )
         where TPolicy : struct, IAssertionPolicy {
-        if (!File.Exists(assertion.Value.Value))
+        if (!System.IO.File.Exists(assertion.Value.Value))
             TPolicy.Fail(assertion.Context, message ?? "File must exist.");
 
         return assertion;
@@ -81,7 +161,7 @@ public static class PathAssertions {
         string? message = null
     )
         where TPolicy : struct, IAssertionPolicy {
-        if (!Directory.Exists(assertion.Value.Value))
+        if (!System.IO.Directory.Exists(assertion.Value.Value))
             TPolicy.Fail(assertion.Context, message ?? "Directory must exist.");
 
         return assertion;
@@ -246,7 +326,7 @@ public static class PathAssertions {
         string? message = null
     )
         where TPolicy : struct, IAssertionPolicy {
-        if (File.Exists(assertion.Value.Value))
+        if (System.IO.File.Exists(assertion.Value.Value))
             TPolicy.Fail(assertion.Context, message ?? "File must not exist.");
 
         return assertion;
@@ -269,7 +349,7 @@ public static class PathAssertions {
         string? message = null
     )
         where TPolicy : struct, IAssertionPolicy {
-        if (Directory.Exists(assertion.Value.Value))
+        if (System.IO.Directory.Exists(assertion.Value.Value))
             TPolicy.Fail(assertion.Context, message ?? "Directory must not exist.");
 
         return assertion;
@@ -348,7 +428,7 @@ public static class PathAssertions {
         where TPolicy : struct, IAssertionPolicy {
         var value = assertion.Value.Value;
 
-        if (!File.Exists(value))
+        if (!System.IO.File.Exists(value))
             TPolicy.Fail(assertion.Context, message ?? "File must exist.");
 
         if (new FileInfo(value).Length != 0)
@@ -376,7 +456,7 @@ public static class PathAssertions {
         where TPolicy : struct, IAssertionPolicy {
         var value = assertion.Value.Value;
 
-        if (!File.Exists(value))
+        if (!System.IO.File.Exists(value))
             TPolicy.Fail(assertion.Context, message ?? "File must exist.");
 
         if (new FileInfo(value).Length == 0)
@@ -406,7 +486,7 @@ public static class PathAssertions {
         where TPolicy : struct, IAssertionPolicy {
         var value = assertion.Value.Value;
 
-        if (!File.Exists(value))
+        if (!System.IO.File.Exists(value))
             TPolicy.Fail(assertion.Context, message ?? "File must exist.");
 
         var actual = new FileInfo(value).Length;
@@ -440,7 +520,7 @@ public static class PathAssertions {
         where TPolicy : struct, IAssertionPolicy {
         var value = assertion.Value.Value;
 
-        if (!File.Exists(value))
+        if (!System.IO.File.Exists(value))
             TPolicy.Fail(assertion.Context, message ?? "File must exist.");
 
         if (new FileInfo(value).Length < minimum) {
@@ -471,7 +551,7 @@ public static class PathAssertions {
         where TPolicy : struct, IAssertionPolicy {
         var value = assertion.Value.Value;
 
-        if (!File.Exists(value))
+        if (!System.IO.File.Exists(value))
             TPolicy.Fail(assertion.Context, message ?? "File must exist.");
 
         if (new FileInfo(value).Length > maximum) {
@@ -505,7 +585,7 @@ public static class PathAssertions {
         where TPolicy : struct, IAssertionPolicy {
         var value = assertion.Value.Value;
 
-        if (!File.Exists(value))
+        if (!System.IO.File.Exists(value))
             TPolicy.Fail(assertion.Context, message ?? "File must exist.");
 
         var actual = new FileInfo(value).Length;
@@ -534,7 +614,7 @@ public static class PathAssertions {
         string? message = null
     )
         where TPolicy : struct, IAssertionPolicy {
-        if (Directory.GetFileSystemEntries(assertion.Value.Value).Length != 0)
+        if (System.IO.Directory.GetFileSystemEntries(assertion.Value.Value).Length != 0)
             TPolicy.Fail(assertion.Context, message ?? "Directory must be empty.");
 
         return assertion;
@@ -557,7 +637,7 @@ public static class PathAssertions {
         string? message = null
     )
         where TPolicy : struct, IAssertionPolicy {
-        if (Directory.GetFileSystemEntries(assertion.Value.Value).Length == 0)
+        if (System.IO.Directory.GetFileSystemEntries(assertion.Value.Value).Length == 0)
             TPolicy.Fail(assertion.Context, message ?? "Directory must not be empty.");
 
         return assertion;
@@ -587,7 +667,7 @@ public static class PathAssertions {
         where TPolicy : struct, IAssertionPolicy {
         ThrowHelper.ThrowIfNull(fileName, nameof(fileName));
 
-        if (!File.Exists(Path.Combine(assertion.Value.Value, fileName)))
+        if (!System.IO.File.Exists(Path.Combine(assertion.Value.Value, fileName)))
             TPolicy.Fail(assertion.Context, message ?? $"Directory must contain file '{fileName}'.");
 
         return assertion;
@@ -617,7 +697,7 @@ public static class PathAssertions {
         where TPolicy : struct, IAssertionPolicy {
         ThrowHelper.ThrowIfNull(directoryName, nameof(directoryName));
 
-        if (!Directory.Exists(Path.Combine(assertion.Value.Value, directoryName)))
+        if (!System.IO.Directory.Exists(Path.Combine(assertion.Value.Value, directoryName)))
             TPolicy.Fail(assertion.Context, message ?? $"Directory must contain directory '{directoryName}'.");
 
         return assertion;

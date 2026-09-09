@@ -747,17 +747,19 @@ The built-in collection assertions operate on `ICollection` or arrays and use `C
 
 ---
 
-## Paths, URIs, and Mail Addresses
+## Paths, URIs, Mail Addresses, and GUIDs
 
-Strings switch into a domain mode before path, URI, or mail checks run, so file semantics never leak onto a plain string:
+Strings parse into a domain value before checks run, so file semantics never leak onto a plain string.
+`Is().X()` entries return the chainable assertion; `Is().AsX()` extracts the raw value terminally (`Guid g = sample.Is().AsGuid()`):
 
 ```csharp
-path.Is().AsFile().Exists().HaveExtension(".json");
-url.Guard().AsUri().Absolute().HaveScheme("https");
-mail.Is().AsMailAddress().HaveHost("contoso.com");
+trackingId.Is().Guid().NotEmpty();
+path.Is().File().Exists().HaveExtension(".json");
+url.Guard().Uri().Absolute().HaveScheme("https");
+mail.Is().MailAddress().HaveHost("contoso.com");
 ```
 
-`AsFile()`/`AsDirectory()` refine to `FilePath`/`DirectoryPath`, which also forward a curated set of members to `System.IO.File`/`Directory`, so asserting and working share one chain (`file.ReadAllText()`, `dir.GetFiles()`).
+`File()`/`Directory()` refine to `FilePath`/`DirectoryPath`, which also forward a curated set of members to `System.IO.File`/`Directory`, so asserting and working share one chain (`file.ReadAllText()`, `dir.GetFiles()`).
 
 ## Runtime Type Assertions
 
