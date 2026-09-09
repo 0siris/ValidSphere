@@ -12,7 +12,7 @@ namespace ValidSphere;
 /// </remarks>
 public static class UriAssertions {
     /// <summary>
-    ///     Switches the string assertion into URI mode, parsing the string without throwing on invalid input.
+    ///     Parses the asserted string into a <see cref="Uri" />, failing on invalid input.
     /// </summary>
     /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
     /// <param name="assertion">The current assertion.</param>
@@ -20,23 +20,63 @@ public static class UriAssertions {
     /// <param name="message">
     ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
     /// </param>
-    /// <returns>An assertion over a <see cref="Uri" />.</returns>
+    /// <returns>The parsed <see cref="Uri" />.</returns>
     /// <remarks>
+    ///     Terminal extractor: for chainable URI assertions use <c>url.Is().Uri()</c> instead.
     ///     Parsing checks syntax only, never reachability.
     /// </remarks>
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<Uri, TPolicy> AsUri<TPolicy>(
+    public static Uri AsUri<TPolicy>(
         this Assertion<string, TPolicy> assertion,
         UriKind kind = UriKind.Absolute,
         string? message = null
     )
         where TPolicy : struct, IAssertionPolicy {
-        if (!Uri.TryCreate(assertion.Value, kind, out var uri) || uri is null)
-            TPolicy.Fail(assertion.Context, message ?? $"String must be a valid '{kind}' URI.");
+        var value = assertion.Value;
 
-        return new Assertion<Uri, TPolicy>(uri, assertion.Context);
+        if (value is null)
+            assertion.FailNull("String must not be null.");
+
+        if (!System.Uri.TryCreate(value, kind, out var uri) || uri is null)
+            assertion.Fail(message ?? $"String must be a valid '{kind}' URI.");
+
+        return uri;
+    }
+
+    /// <summary>
+    ///     Parses the asserted string into a <see cref="System.Uri" /> and returns a chainable URI assertion.
+    /// </summary>
+    /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
+    /// <param name="assertion">The current assertion.</param>
+    /// <param name="kind">The accepted URI kind. Defaults to <see cref="UriKind.Absolute" />.</param>
+    /// <param name="message">
+    ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
+    /// </param>
+    /// <returns>An assertion over the parsed <see cref="System.Uri" />.</returns>
+    /// <remarks>
+    ///     Chain entry: for the raw value use <c>AsUri()</c> instead.
+    ///     Parsing checks syntax only, never reachability.
+    /// </remarks>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<Uri, TPolicy> Uri<TPolicy>(
+        this Assertion<string, TPolicy> assertion,
+        UriKind kind = UriKind.Absolute,
+        string? message = null
+    )
+        where TPolicy : struct, IAssertionPolicy {
+        var value = assertion.Value;
+
+        if (value is null)
+            assertion.FailNull("String must not be null.");
+
+        if (!System.Uri.TryCreate(value, kind, out var uri) || uri is null)
+            assertion.Fail(message ?? $"String must be a valid '{kind}' URI.");
+
+        return assertion.Refine(uri);
     }
 
     /// <summary>
@@ -59,10 +99,10 @@ public static class UriAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, message ?? "Uri must not be null.");
+            assertion.FailNull(message ?? "Uri must not be null.");
 
         if (!value.IsAbsoluteUri)
-            TPolicy.Fail(assertion.Context, message ?? "Uri must be absolute.");
+            assertion.Fail(message ?? "Uri must be absolute.");
 
         return assertion;
     }
@@ -72,7 +112,7 @@ public static class UriAssertions {
     /// </summary>
     /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
     /// <param name="assertion">The current assertion.</param>
-    /// <param name="scheme">The expected scheme, exactly as <see cref="Uri.Scheme" /> reports it (e.g. "https").</param>
+    /// <param name="scheme">The expected scheme, exactly as <see cref="System.Uri.Scheme" /> reports it (e.g. "https").</param>
     /// <param name="comparison">The string comparison to use. Defaults to <see cref="StringComparison.OrdinalIgnoreCase" />.</param>
     /// <param name="message">
     ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
@@ -93,10 +133,10 @@ public static class UriAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, message ?? "Uri must not be null.");
+            assertion.FailNull(message ?? "Uri must not be null.");
 
         if (!value.Scheme.Equals(scheme, comparison))
-            TPolicy.Fail(assertion.Context, message ?? $"Uri must have scheme '{scheme}'.");
+            assertion.Fail(message ?? $"Uri must have scheme '{scheme}'.");
 
         return assertion;
     }
@@ -127,10 +167,10 @@ public static class UriAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, message ?? "Uri must not be null.");
+            assertion.FailNull(message ?? "Uri must not be null.");
 
         if (!value.Host.Equals(host, comparison))
-            TPolicy.Fail(assertion.Context, message ?? $"Uri must have host '{host}'.");
+            assertion.Fail(message ?? $"Uri must have host '{host}'.");
 
         return assertion;
     }
@@ -157,10 +197,10 @@ public static class UriAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, message ?? "Uri must not be null.");
+            assertion.FailNull(message ?? "Uri must not be null.");
 
         if (value.Port != port)
-            TPolicy.Fail(assertion.Context, message ?? $"Uri must have port '{port}'.");
+            assertion.Fail(message ?? $"Uri must have port '{port}'.");
 
         return assertion;
     }
@@ -185,10 +225,10 @@ public static class UriAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, message ?? "Uri must not be null.");
+            assertion.FailNull(message ?? "Uri must not be null.");
 
         if (!value.IsLoopback)
-            TPolicy.Fail(assertion.Context, message ?? "Uri must be a loopback URI.");
+            assertion.Fail(message ?? "Uri must be a loopback URI.");
 
         return assertion;
     }

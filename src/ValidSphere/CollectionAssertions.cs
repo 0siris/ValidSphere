@@ -28,7 +28,7 @@ public static class CollectionAssertions {
         where TCollection : ICollection
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value.Count == 0)
-            TPolicy.Fail(assertion.Context, message ?? "Collection must not be empty.");
+            assertion.Fail(message ?? "Collection must not be empty.");
 
         return assertion;
     }
@@ -48,7 +48,7 @@ public static class CollectionAssertions {
         where TCollection : ICollection
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value.Count == 0)
-            TPolicy.Fail(assertion.Context, messageFactory(assertion.Context));
+            assertion.Fail(messageFactory(assertion.Context));
 
         return assertion;
     }
@@ -78,8 +78,7 @@ public static class CollectionAssertions {
         var actual = assertion.Value.Count;
 
         if (actual != expected) {
-            TPolicy.Fail(assertion.Context,
-                         message ?? $"Expected count '{expected}', but found '{actual}'.");
+            assertion.Fail(message ?? $"Expected count '{expected}', but found '{actual}'.");
         }
 
         return assertion;
@@ -103,7 +102,7 @@ public static class CollectionAssertions {
         var actual = assertion.Value.Count;
 
         if (actual != expected) {
-            TPolicy.Fail(assertion.Context, messageFactory(assertion.Context));
+            assertion.Fail(messageFactory(assertion.Context));
         }
 
         return assertion;
@@ -133,8 +132,7 @@ public static class CollectionAssertions {
         var actual = assertion.Value.Length;
 
         if (actual != expected) {
-            TPolicy.Fail(assertion.Context,
-                         message ?? $"Expected length '{expected}', but found '{actual}'.");
+            assertion.Fail(message ?? $"Expected length '{expected}', but found '{actual}'.");
         }
 
         return assertion;
@@ -157,7 +155,7 @@ public static class CollectionAssertions {
         var actual = assertion.Value.Length;
 
         if (actual != expected) {
-            TPolicy.Fail(assertion.Context, messageFactory(assertion.Context));
+            assertion.Fail(messageFactory(assertion.Context));
         }
 
         return assertion;
@@ -184,8 +182,7 @@ public static class CollectionAssertions {
         where TCollection : ICollection
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value.Count < minimum) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   assertion.Value.Count,
+            assertion.FailOutOfRange(assertion.Value.Count,
                                    message ?? $"Collection must contain at least '{minimum}' elements.");
         }
 
@@ -214,8 +211,7 @@ public static class CollectionAssertions {
         where TCollection : ICollection
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value.Count > maximum) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   assertion.Value.Count,
+            assertion.FailOutOfRange(assertion.Value.Count,
                                    message ?? $"Collection must contain at most '{maximum}' elements.");
         }
 
@@ -249,8 +245,7 @@ public static class CollectionAssertions {
         var actual = assertion.Value.Count;
 
         if (actual < minimum || actual > maximum) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   actual,
+            assertion.FailOutOfRange(actual,
                                    message ?? $"Collection count must be in range [{minimum}, {maximum}].");
         }
 
@@ -276,7 +271,7 @@ public static class CollectionAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value.Count == 0)
-            TPolicy.Fail(assertion.Context, message ?? "Collection must not be empty.");
+            assertion.Fail(message ?? "Collection must not be empty.");
 
         return assertion;
     }
@@ -304,8 +299,7 @@ public static class CollectionAssertions {
         var actual = assertion.Value.Count;
 
         if (actual != expected) {
-            TPolicy.Fail(assertion.Context,
-                         message ?? $"Expected count '{expected}', but found '{actual}'.");
+            assertion.Fail(message ?? $"Expected count '{expected}', but found '{actual}'.");
         }
 
         return assertion;
@@ -332,8 +326,7 @@ public static class CollectionAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value.Count < minimum) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   assertion.Value.Count,
+            assertion.FailOutOfRange(assertion.Value.Count,
                                    message ?? $"Collection must contain at least '{minimum}' elements.");
         }
 
@@ -361,8 +354,7 @@ public static class CollectionAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value.Count > maximum) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   assertion.Value.Count,
+            assertion.FailOutOfRange(assertion.Value.Count,
                                    message ?? $"Collection must contain at most '{maximum}' elements.");
         }
 
@@ -395,8 +387,7 @@ public static class CollectionAssertions {
         var actual = assertion.Value.Count;
 
         if (actual < minimum || actual > maximum) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   actual,
+            assertion.FailOutOfRange(actual,
                                    message ?? $"Collection count must be in range [{minimum}, {maximum}].");
         }
 
@@ -424,8 +415,7 @@ public static class CollectionAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value.Length < minimum) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   assertion.Value.Length,
+            assertion.FailOutOfRange(assertion.Value.Length,
                                    message ?? $"Array must have at least '{minimum}' elements.");
         }
 
@@ -453,8 +443,7 @@ public static class CollectionAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value.Length > maximum) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   assertion.Value.Length,
+            assertion.FailOutOfRange(assertion.Value.Length,
                                    message ?? $"Array must have at most '{maximum}' elements.");
         }
 
@@ -487,8 +476,7 @@ public static class CollectionAssertions {
         var actual = assertion.Value.Length;
 
         if (actual < minimum || actual > maximum) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   actual,
+            assertion.FailOutOfRange(actual,
                                    message ?? $"Array length must be in range [{minimum}, {maximum}].");
         }
 
@@ -527,7 +515,7 @@ public static class CollectionAssertions {
                 return assertion;
         }
 
-        TPolicy.Fail(assertion.Context, message ?? $"Collection must contain '{expected}'.");
+        assertion.Fail(message ?? $"Collection must contain '{expected}'.");
 
         return assertion;
     }

@@ -29,7 +29,7 @@ public static class DateTimeOffsetAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value.Offset != TimeSpan.Zero)
-            TPolicy.Fail(assertion.Context, message ?? "DateTimeOffset must be UTC.");
+            assertion.Fail(message ?? "DateTimeOffset must be UTC.");
 
         return assertion;
     }
@@ -54,7 +54,7 @@ public static class DateTimeOffsetAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value.Offset != offset)
-            TPolicy.Fail(assertion.Context, message ?? $"DateTimeOffset must have offset '{offset}'.");
+            assertion.Fail(message ?? $"DateTimeOffset must have offset '{offset}'.");
 
         return assertion;
     }

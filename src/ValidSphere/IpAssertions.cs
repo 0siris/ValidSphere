@@ -29,10 +29,10 @@ public static class IpAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, message ?? "IP address must not be null.");
+            assertion.FailNull(message ?? "IP address must not be null.");
 
         if (!IPAddress.IsLoopback(value))
-            TPolicy.Fail(assertion.Context, message ?? "IP address must be a loopback address.");
+            assertion.Fail(message ?? "IP address must be a loopback address.");
 
         return assertion;
     }
@@ -57,10 +57,10 @@ public static class IpAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, message ?? "IP address must not be null.");
+            assertion.FailNull(message ?? "IP address must not be null.");
 
         if (value.AddressFamily != AddressFamily.InterNetwork)
-            TPolicy.Fail(assertion.Context, message ?? "IP address must be IPv4.");
+            assertion.Fail(message ?? "IP address must be IPv4.");
 
         return assertion;
     }
@@ -85,10 +85,10 @@ public static class IpAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, message ?? "IP address must not be null.");
+            assertion.FailNull(message ?? "IP address must not be null.");
 
         if (value.AddressFamily != AddressFamily.InterNetworkV6)
-            TPolicy.Fail(assertion.Context, message ?? "IP address must be IPv6.");
+            assertion.Fail(message ?? "IP address must be IPv6.");
 
         return assertion;
     }
@@ -115,10 +115,10 @@ public static class IpAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, message ?? "Endpoint must not be null.");
+            assertion.FailNull(message ?? "Endpoint must not be null.");
 
         if (value.Port != port)
-            TPolicy.Fail(assertion.Context, message ?? $"Endpoint must have port '{port}'.");
+            assertion.Fail(message ?? $"Endpoint must have port '{port}'.");
 
         return assertion;
     }
@@ -143,10 +143,10 @@ public static class IpAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, message ?? "Endpoint must not be null.");
+            assertion.FailNull(message ?? "Endpoint must not be null.");
 
         if (!IPAddress.IsLoopback(value.Address))
-            TPolicy.Fail(assertion.Context, message ?? "Endpoint must be a loopback endpoint.");
+            assertion.Fail(message ?? "Endpoint must be a loopback endpoint.");
 
         return assertion;
     }

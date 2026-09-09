@@ -32,8 +32,7 @@ public static class CoreAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (!EqualityComparer<T>.Default.Equals(assertion.Value, expected)) {
-            TPolicy.Fail(assertion.Context,
-                         message ?? $"Expected '{expected}', but found '{assertion.Value}'.");
+            assertion.Fail(message ?? $"Expected '{expected}', but found '{assertion.Value}'.");
         }
 
         return assertion;
@@ -54,7 +53,7 @@ public static class CoreAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (!EqualityComparer<T>.Default.Equals(assertion.Value, expected)) {
-            TPolicy.Fail(assertion.Context, messageFactory(assertion.Context));
+            assertion.Fail(messageFactory(assertion.Context));
         }
 
         return assertion;
@@ -82,8 +81,7 @@ public static class CoreAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (EqualityComparer<T>.Default.Equals(assertion.Value, unexpected)) {
-            TPolicy.Fail(assertion.Context,
-                         message ?? $"Value must not be '{unexpected}'.");
+            assertion.Fail(message ?? $"Value must not be '{unexpected}'.");
         }
 
         return assertion;
@@ -104,7 +102,7 @@ public static class CoreAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (EqualityComparer<T>.Default.Equals(assertion.Value, unexpected)) {
-            TPolicy.Fail(assertion.Context, messageFactory(assertion.Context));
+            assertion.Fail(messageFactory(assertion.Context));
         }
 
         return assertion;
@@ -128,7 +126,7 @@ public static class CoreAssertions {
             string? message = null
         ) {
             if (!assertion.Value)
-                TPolicy.Fail(assertion.Context, message ?? "Expected value to be true.");
+                assertion.Fail(message ?? "Expected value to be true.");
 
             return assertion;
         }
@@ -145,7 +143,7 @@ public static class CoreAssertions {
             Func<AssertionContext, string> messageFactory
         ) {
             if (!assertion.Value)
-                TPolicy.Fail(assertion.Context, messageFactory(assertion.Context));
+                assertion.Fail(messageFactory(assertion.Context));
 
             return assertion;
         }
@@ -165,7 +163,7 @@ public static class CoreAssertions {
             string? message = null
         ) {
             if (assertion.Value)
-                TPolicy.Fail(assertion.Context, message ?? "Expected value to be false.");
+                assertion.Fail(message ?? "Expected value to be false.");
 
             return assertion;
         }
@@ -182,7 +180,7 @@ public static class CoreAssertions {
             Func<AssertionContext, string> messageFactory
         ) {
             if (assertion.Value)
-                TPolicy.Fail(assertion.Context, messageFactory(assertion.Context));
+                assertion.Fail(messageFactory(assertion.Context));
 
             return assertion;
         }
@@ -214,8 +212,7 @@ public static class CoreAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (!condition) {
-            TPolicy.Fail(assertion.Context,
-                         message ?? (conditionExpression is null
+            assertion.Fail(message ?? (conditionExpression is null
                                          ? "Condition was not satisfied."
                                          : $"Condition '{conditionExpression}' was not satisfied."));
         }
@@ -240,7 +237,7 @@ public static class CoreAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (!condition) {
-            TPolicy.Fail(assertion.Context, messageFactory(assertion.Context));
+            assertion.Fail(messageFactory(assertion.Context));
         }
 
         return assertion;
@@ -279,8 +276,7 @@ public static class CoreAssertions {
         ThrowHelper.ThrowIfNull(predicate, nameof(predicate));
 
         if (!predicate(assertion.Value)) {
-            TPolicy.Fail(assertion.Context,
-                         message
+            assertion.Fail(message
                          ?? (predicateExpression is null
                                  ? "Subject does not satisfy the required condition."
                                  : $"Subject does not satisfy predicate '{predicateExpression}'."));
@@ -308,7 +304,7 @@ public static class CoreAssertions {
         ThrowHelper.ThrowIfNull(predicate, nameof(predicate));
 
         if (!predicate(assertion.Value)) {
-            TPolicy.Fail(assertion.Context, messageFactory(assertion.Context));
+            assertion.Fail(messageFactory(assertion.Context));
         }
 
         return assertion;

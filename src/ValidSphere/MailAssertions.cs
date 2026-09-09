@@ -13,39 +13,87 @@ namespace ValidSphere;
 /// </remarks>
 public static class MailAssertions {
     /// <summary>
-    ///     Switches the string assertion into mail mode, parsing the string without throwing on invalid input.
+    ///     Parses the asserted string into a <see cref="MailAddress" />, failing on invalid input.
     /// </summary>
     /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
     /// <param name="assertion">The current assertion.</param>
     /// <param name="message">
     ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
     /// </param>
-    /// <returns>An assertion over a <see cref="MailAddress" />.</returns>
+    /// <returns>The parsed <see cref="MailAddress" />.</returns>
     /// <remarks>
+    ///     Terminal extractor: for chainable mail assertions use <c>mail.Is().MailAddress()</c> instead.
     ///     Parsing checks syntax only, never reachability.
     /// </remarks>
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<MailAddress, TPolicy> AsMailAddress<TPolicy>(
+    public static MailAddress AsMailAddress<TPolicy>(
         this Assertion<string, TPolicy> assertion,
         string? message = null
     )
         where TPolicy : struct, IAssertionPolicy {
+        var value = assertion.Value;
+
+        if (value is null)
+            assertion.FailNull("String must not be null.");
+
 #if NETSTANDARD2_1
         MailAddress? address = null;
         try {
-            address = new MailAddress(assertion.Value);
+            address = new System.Net.Mail.MailAddress(value);
         }
         catch (FormatException) { }
         catch (ArgumentException) { }
         if (address is null)
 #else
-        if (!MailAddress.TryCreate(assertion.Value, out var address) || address is null)
+        if (!System.Net.Mail.MailAddress.TryCreate(value, out var address) || address is null)
 #endif
-            TPolicy.Fail(assertion.Context, message ?? "String must be a valid mail address.");
+            assertion.Fail(message ?? "String must be a valid mail address.");
 
-        return new Assertion<MailAddress, TPolicy>(address, assertion.Context);
+        return address;
+    }
+
+    /// <summary>
+    ///     Parses the asserted string into a <see cref="System.Net.Mail.MailAddress" /> and returns a chainable mail assertion.
+    /// </summary>
+    /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
+    /// <param name="assertion">The current assertion.</param>
+    /// <param name="message">
+    ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
+    /// </param>
+    /// <returns>An assertion over the parsed <see cref="System.Net.Mail.MailAddress" />.</returns>
+    /// <remarks>
+    ///     Chain entry: for the raw value use <c>AsMailAddress()</c> instead.
+    ///     Parsing checks syntax only, never reachability.
+    /// </remarks>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<MailAddress, TPolicy> MailAddress<TPolicy>(
+        this Assertion<string, TPolicy> assertion,
+        string? message = null
+    )
+        where TPolicy : struct, IAssertionPolicy {
+        var value = assertion.Value;
+
+        if (value is null)
+            assertion.FailNull("String must not be null.");
+
+#if NETSTANDARD2_1
+        MailAddress? address = null;
+        try {
+            address = new System.Net.Mail.MailAddress(value);
+        }
+        catch (FormatException) { }
+        catch (ArgumentException) { }
+        if (address is null)
+#else
+        if (!System.Net.Mail.MailAddress.TryCreate(value, out var address) || address is null)
+#endif
+            assertion.Fail(message ?? "String must be a valid mail address.");
+
+        return assertion.Refine(address);
     }
 
     /// <summary>
@@ -74,10 +122,10 @@ public static class MailAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, message ?? "Mail address must not be null.");
+            assertion.FailNull(message ?? "Mail address must not be null.");
 
         if (!value.Host.Equals(host, comparison))
-            TPolicy.Fail(assertion.Context, message ?? $"Mail address must have host '{host}'.");
+            assertion.Fail(message ?? $"Mail address must have host '{host}'.");
 
         return assertion;
     }
@@ -108,10 +156,10 @@ public static class MailAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, message ?? "Mail address must not be null.");
+            assertion.FailNull(message ?? "Mail address must not be null.");
 
         if (!value.User.Equals(user, comparison))
-            TPolicy.Fail(assertion.Context, message ?? $"Mail address must have user '{user}'.");
+            assertion.Fail(message ?? $"Mail address must have user '{user}'.");
 
         return assertion;
     }

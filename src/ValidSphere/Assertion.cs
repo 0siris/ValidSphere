@@ -21,6 +21,7 @@ public readonly struct Assertion<T, TPolicy>
 
     private readonly T subject;
     private readonly AssertionContext context;
+    private readonly Func<AssertionFailure, Exception>? exceptionFactory;
 
     /// <summary>
     ///     Initializes a new assertion for the specified subject and call-site context.
@@ -36,6 +37,21 @@ public readonly struct Assertion<T, TPolicy>
     public Assertion(T subject, AssertionContext context) {
         this.subject = subject;
         this.context = context;
+        this.exceptionFactory = null;
+    }
+
+    /// <summary>
+    ///     Initializes a new assertion carrying a custom exception factory.
+    /// </summary>
+    /// <param name="subject">The value to assert.</param>
+    /// <param name="context">The compiler-provided assertion call-site context.</param>
+    /// <param name="exceptionFactory">The custom exception factory for this chain.</param>
+    [DebuggerStepThrough]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private Assertion(T subject, AssertionContext context, Func<AssertionFailure, Exception>? exceptionFactory) {
+        this.subject = subject;
+        this.context = context;
+        this.exceptionFactory = exceptionFactory;
     }
 
     /// <summary>
@@ -48,7 +64,7 @@ public readonly struct Assertion<T, TPolicy>
     }
 
     /// <summary>
-    ///     Gets the compiler-provided call-site context captured by <c>Should()</c> or <c>Guard()</c>.
+    ///     Gets the compiler-provided call-site context captured by <c>Is()</c> or <c>Guard()</c>.
     /// </summary>
     public AssertionContext Context {
         [DebuggerStepThrough]
@@ -79,10 +95,9 @@ public readonly struct Assertion<T, TPolicy>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Assertion<TExpected, TPolicy> OfType<TExpected>(string? message = null) {
         if (subject is TExpected typed)
-            return new Assertion<TExpected, TPolicy>(typed, context);
+            return Refine(typed);
 
-        TPolicy.Fail(context,
-                     message ?? $"Value must be of type '{typeof(TExpected).Name}'.");
+        Fail(message ?? $"Value must be of type '{typeof(TExpected).Name}'.");
 
         return default;
     }
@@ -94,12 +109,97 @@ public readonly struct Assertion<T, TPolicy>
     /// <returns>The asserted value.</returns>
     /// <remarks>
     ///     This allows assertions to be embedded directly into expressions, for example:
-    ///     <c>Use(value.Guard().BeGreaterThan(0))</c>.
+    ///     <c>Use(value.Guard().Greater(0))</c>.
     /// </remarks>
     [DebuggerStepThrough]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator T(Assertion<T, TPolicy> assertion)
         => assertion.subject;
+
+    /// <summary>
+    ///     Attaches a custom exception factory to this assertion chain.
+    /// </summary>
+    /// <param name="exceptionFactory">The factory invoked with failure metadata when a chained assertion fails.</param>
+    /// <returns>A new assertion carrying the factory, with the same subject, context, and policy.</returns>
+    [DebuggerStepThrough]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Assertion<T, TPolicy> OnFailure(
+        Func<AssertionFailure, Exception> exceptionFactory
+    ) {
+        ThrowHelper.ThrowIfNull(exceptionFactory, nameof(exceptionFactory));
+
+        return new Assertion<T, TPolicy>(subject, context, exceptionFactory);
+    }
+
+    /// <summary>
+    ///     Refines the assertion to another type, preserving context, policy, and the custom exception factory.
+    /// </summary>
+    /// <typeparam name="TNew">The refined type.</typeparam>
+    /// <param name="value">The refined value.</param>
+    /// <returns>An assertion over the refined value.</returns>
+    [DebuggerStepThrough]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Assertion<TNew, TPolicy> Refine<TNew>(TNew value)
+        => new(value, context, exceptionFactory);
+
+    /// <summary>
+    ///     Reports a general assertion failure, honoring the custom exception factory when present.
+    /// </summary>
+    /// <param name="message">The failure message.</param>
+    /// <remarks>
+    ///     Custom assertion extensions call this helper instead of <c>TPolicy</c> directly so <c>OnFailure</c> is preserved.
+    /// </remarks>
+    [DoesNotReturn]
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public void Fail(string message) {
+        if (exceptionFactory is not null) {
+            throw exceptionFactory(new AssertionFailure(AssertionFailureKind.General, message, context));
+        }
+
+        TPolicy.Fail(context, message);
+    }
+
+    /// <summary>
+    ///     Reports an unexpected null, honoring the custom exception factory when present.
+    /// </summary>
+    /// <param name="message">The failure message.</param>
+    /// <remarks>
+    ///     Custom assertion extensions call this helper instead of <c>TPolicy</c> directly so <c>OnFailure</c> is preserved.
+    /// </remarks>
+    [DoesNotReturn]
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public void FailNull(string message) {
+        if (exceptionFactory is not null) {
+            throw exceptionFactory(new AssertionFailure(AssertionFailureKind.Null, message, context));
+        }
+
+        TPolicy.FailNull(context, message);
+    }
+
+    /// <summary>
+    ///     Reports an out-of-range value, honoring the custom exception factory when present.
+    /// </summary>
+    /// <typeparam name="TActual">The type of the offending value.</typeparam>
+    /// <param name="actualValue">The value that violated the range constraint.</param>
+    /// <param name="message">The failure message.</param>
+    /// <remarks>
+    ///     Custom assertion extensions call this helper instead of <c>TPolicy</c> directly so <c>OnFailure</c> is preserved.
+    /// </remarks>
+    [DoesNotReturn]
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public void FailOutOfRange<TActual>(TActual actualValue, string message) {
+        if (exceptionFactory is not null) {
+            throw exceptionFactory(new AssertionFailure(AssertionFailureKind.OutOfRange, message, context, actualValue));
+        }
+
+        TPolicy.FailOutOfRange(context, actualValue, message);
+    }
 }
 
 
@@ -189,19 +289,18 @@ public static class AssertionEntryExtensions {
     ///     The source line number of the caller, supplied automatically by the compiler.
     /// </param>
     /// <returns>
-    ///     An assertion containing the validated non-null value for further fluent assertions
-    ///     or implicit extraction of the value.
+    ///     The validated non-null value.
     /// </returns>
     /// <exception cref="AssertException">
     ///     <paramref name="subject"/> is <see langword="null" />.
     /// </exception>
     /// <remarks>
-    ///     Unlike <c>Should().NotBeNull()</c>, this direct assertion participates in nullable
+    ///     Unlike <c>Is().NotNull()</c>, this direct assertion participates in nullable
     ///     flow analysis through <see cref="NotNullAttribute"/> and therefore refines the
     ///     original reference to non-null after a successful call.
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<T, IsPolicy> AssertNotNull<T>(
+    public static T AsNotNull<T>(
         [NotNull] this T? subject,
         string? message = null,
         [CallerArgumentExpression("subject")] string? expression = null,
@@ -215,7 +314,7 @@ public static class AssertionEntryExtensions {
         if (subject is null)
             IsPolicy.FailNull(context, message ?? "Value must not be null");
 
-        return new(subject, context);
+        return subject;
     }
 
     /// <summary>
@@ -244,14 +343,14 @@ public static class AssertionEntryExtensions {
     ///     The source line number of the caller, supplied automatically by the compiler.
     /// </param>
     /// <returns>
-    ///     An assertion containing the underlying non-null value.
+    ///     The underlying non-null value.
     /// </returns>
     /// <exception cref="AssertException">
     ///     <paramref name="subject"/> has no value.
     /// </exception>
     [DebuggerStepThrough]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<T, IsPolicy> AssertNotNull<T>(
+    public static T AsNotNull<T>(
         [NotNull] this T? subject,
         string? message = null,
         [CallerArgumentExpression("subject")] string? expression = null,
@@ -271,7 +370,7 @@ public static class AssertionEntryExtensions {
                                   context,
                                   message ?? "Value must have a value.");
 
-        return new(subject.GetValueOrDefault(), context);
+        return subject.GetValueOrDefault();
     }
 
 
@@ -302,19 +401,18 @@ public static class AssertionEntryExtensions {
     ///     The source line number of the caller, supplied automatically by the compiler.
     /// </param>
     /// <returns>
-    ///     An assertion containing the validated non-null value for further fluent assertions
-    ///     or implicit extraction of the value.
+    ///     The validated non-null value.
     /// </returns>
     /// <exception cref="ArgumentNullException">
     ///     <paramref name="subject"/> is <see langword="null" />.
     /// </exception>
     /// <remarks>
-    ///     This is the flow-analysis-aware counterpart to <c>Guard().NotBeNull()</c>.
+    ///     This is the flow-analysis-aware counterpart to <c>Guard().NotNull()</c>.
     ///     The <see cref="NotNullAttribute"/> informs nullable flow analysis that
     ///     <paramref name="subject"/> is non-null after a successful call.
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<T, GuardPolicy> GuardNotNull<T>(
+    public static T AsGuardNotNull<T>(
         [NotNull] this T? subject,
         string? message = null,
         [CallerArgumentExpression("subject")] string? expression = null,
@@ -327,7 +425,7 @@ public static class AssertionEntryExtensions {
         if (subject is null)
             GuardPolicy.FailNull(context, message ?? "Value must not be null");
 
-        return new(subject, context);
+        return subject;
     }
 
     /// <summary>
@@ -356,14 +454,14 @@ public static class AssertionEntryExtensions {
 ///     The source line number of the caller, supplied automatically by the compiler.
 /// </param>
 /// <returns>
-///     An assertion containing the underlying non-null value.
+///     The underlying non-null value.
 /// </returns>
 /// <exception cref="ArgumentNullException">
 ///     <paramref name="subject"/> has no value.
 /// </exception>
 [DebuggerStepThrough]
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public static Assertion<T, GuardPolicy> GuardNotNull<T>(
+public static T AsGuardNotNull<T>(
     [NotNull] this T? subject,
     string? message = null,
     [CallerArgumentExpression("subject")] string? expression = null,
@@ -383,6 +481,6 @@ public static Assertion<T, GuardPolicy> GuardNotNull<T>(
             context,
             message ?? "Value must have a value.");
 
-    return new(subject.GetValueOrDefault(), context);
+    return subject.GetValueOrDefault();
 }
 }

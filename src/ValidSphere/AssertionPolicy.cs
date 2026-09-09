@@ -41,7 +41,7 @@ public interface IAssertionPolicy {
 
 
 /// <summary>
-///     Failure policy used by <c>Should()</c>.
+///     Failure policy used by <c>Is()</c>.
 /// </summary>
 /// <remarks>
 ///     Failed assertions are reported as <see cref="AssertException" /> instances.

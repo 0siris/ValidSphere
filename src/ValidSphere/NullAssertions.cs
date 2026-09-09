@@ -30,9 +30,33 @@ public static class NullAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, message ?? "Value must not be null.");
+            assertion.FailNull(message ?? "Value must not be null.");
 
-        return new Assertion<T, TPolicy>(value!, assertion.Context);
+        return assertion.Refine(value!);
+    }
+
+    /// <summary>
+    ///     Asserts that a nullable reference is not <see langword="null" /> and refines the assertion
+    ///     to its non-nullable reference type, building the failure message lazily.
+    /// </summary>
+    /// <remarks>
+    ///     <paramref name="messageFactory" /> is required, receives the call-site context, and is invoked only in the failure branch.
+    /// </remarks>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<T, TPolicy> NotNull<T, TPolicy>(
+        this Assertion<T?, TPolicy> assertion,
+        Func<AssertionContext, string> messageFactory
+    )
+        where T : class
+        where TPolicy : struct, IAssertionPolicy {
+        var value = assertion.Value;
+
+        if (value is null)
+            assertion.FailNull(messageFactory(assertion.Context));
+
+        return assertion.Refine(value!);
     }
 
     /// <summary>
@@ -58,9 +82,33 @@ public static class NullAssertions {
         var value = assertion.Value;
 
         if (!value.HasValue)
-            TPolicy.FailNull(assertion.Context, message ?? "Value must have a value.");
+            assertion.FailNull(message ?? "Value must have a value.");
 
-        return new Assertion<T, TPolicy>(value.GetValueOrDefault(), assertion.Context);
+        return assertion.Refine(value.GetValueOrDefault());
+    }
+
+    /// <summary>
+    ///     Asserts that a nullable value type has a value and refines the assertion
+    ///     to the underlying value type, building the failure message lazily.
+    /// </summary>
+    /// <remarks>
+    ///     <paramref name="messageFactory" /> is required, receives the call-site context, and is invoked only in the failure branch.
+    /// </remarks>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<T, TPolicy> NotNull<T, TPolicy>(
+        this Assertion<T?, TPolicy> assertion,
+        Func<AssertionContext, string> messageFactory
+    )
+        where T : struct
+        where TPolicy : struct, IAssertionPolicy {
+        var value = assertion.Value;
+
+        if (!value.HasValue)
+            assertion.FailNull(messageFactory(assertion.Context));
+
+        return assertion.Refine(value.GetValueOrDefault());
     }
 
     /// <summary>
@@ -83,7 +131,28 @@ public static class NullAssertions {
         where T : class
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value is not null)
-            TPolicy.Fail(assertion.Context, message ?? "Value must be null.");
+            assertion.Fail(message ?? "Value must be null.");
+
+        return assertion;
+    }
+
+    /// <summary>
+    ///     Asserts that a nullable reference is <see langword="null" />, building the failure message lazily.
+    /// </summary>
+    /// <remarks>
+    ///     <paramref name="messageFactory" /> is required, receives the call-site context, and is invoked only in the failure branch.
+    /// </remarks>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<T?, TPolicy> Null<T, TPolicy>(
+        this Assertion<T?, TPolicy> assertion,
+        Func<AssertionContext, string> messageFactory
+    )
+        where T : class
+        where TPolicy : struct, IAssertionPolicy {
+        if (assertion.Value is not null)
+            assertion.Fail(messageFactory(assertion.Context));
 
         return assertion;
     }
@@ -108,7 +177,28 @@ public static class NullAssertions {
         where T : struct
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value.HasValue)
-            TPolicy.Fail(assertion.Context, message ?? "Value must be null.");
+            assertion.Fail(message ?? "Value must be null.");
+
+        return assertion;
+    }
+
+    /// <summary>
+    ///     Asserts that a nullable value type has no value, building the failure message lazily.
+    /// </summary>
+    /// <remarks>
+    ///     <paramref name="messageFactory" /> is required, receives the call-site context, and is invoked only in the failure branch.
+    /// </remarks>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<T?, TPolicy> Null<T, TPolicy>(
+        this Assertion<T?, TPolicy> assertion,
+        Func<AssertionContext, string> messageFactory
+    )
+        where T : struct
+        where TPolicy : struct, IAssertionPolicy {
+        if (assertion.Value.HasValue)
+            assertion.Fail(messageFactory(assertion.Context));
 
         return assertion;
     }

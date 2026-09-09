@@ -28,7 +28,7 @@ public static class DictionaryAssertions {
         where TKey : notnull
         where TPolicy : struct, IAssertionPolicy {
         if (!assertion.Value.ContainsKey(key)) {
-            TPolicy.Fail(assertion.Context, message ?? $"Dictionary must contain key '{key}'.");
+            assertion.Fail(message ?? $"Dictionary must contain key '{key}'.");
         }
 
         return assertion;
@@ -47,7 +47,7 @@ public static class DictionaryAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (!assertion.Value.ContainsKey(key)) {
-            TPolicy.Fail(assertion.Context, message ?? $"Dictionary must contain key '{key}'.");
+            assertion.Fail(message ?? $"Dictionary must contain key '{key}'.");
         }
 
         return assertion;
@@ -66,7 +66,7 @@ public static class DictionaryAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (!assertion.Value.ContainsKey(key)) {
-            TPolicy.Fail(assertion.Context, message ?? $"Dictionary must contain key '{key}'.");
+            assertion.Fail(message ?? $"Dictionary must contain key '{key}'.");
         }
 
         return assertion;
@@ -86,7 +86,7 @@ public static class DictionaryAssertions {
         where TKey : notnull
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value.ContainsKey(key)) {
-            TPolicy.Fail(assertion.Context, message ?? $"Dictionary must not contain key '{key}'.");
+            assertion.Fail(message ?? $"Dictionary must not contain key '{key}'.");
         }
 
         return assertion;
@@ -105,7 +105,7 @@ public static class DictionaryAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value.ContainsKey(key)) {
-            TPolicy.Fail(assertion.Context, message ?? $"Dictionary must not contain key '{key}'.");
+            assertion.Fail(message ?? $"Dictionary must not contain key '{key}'.");
         }
 
         return assertion;
@@ -124,7 +124,7 @@ public static class DictionaryAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value.ContainsKey(key)) {
-            TPolicy.Fail(assertion.Context, message ?? $"Dictionary must not contain key '{key}'.");
+            assertion.Fail(message ?? $"Dictionary must not contain key '{key}'.");
         }
 
         return assertion;

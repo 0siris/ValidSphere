@@ -29,7 +29,7 @@ public static class DateOnlyAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value != DateOnly.FromDateTime(DateTime.Today))
-            TPolicy.Fail(assertion.Context, message ?? "Date must be today.");
+            assertion.Fail(message ?? "Date must be today.");
 
         return assertion;
     }
@@ -54,7 +54,7 @@ public static class DateOnlyAssertions {
         var dayOfWeek = assertion.Value.DayOfWeek;
 
         if (dayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
-            TPolicy.Fail(assertion.Context, message ?? "Date must be a weekday.");
+            assertion.Fail(message ?? "Date must be a weekday.");
 
         return assertion;
     }
