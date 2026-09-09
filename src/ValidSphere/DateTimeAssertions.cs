@@ -31,7 +31,7 @@ public static class DateTimeAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value.Kind != expected) {
-            TPolicy.Fail(assertion.Context, message ?? $"DateTime must have kind '{expected}'.");
+            assertion.Fail(message ?? $"DateTime must have kind '{expected}'.");
         }
 
         return assertion;
@@ -55,7 +55,7 @@ public static class DateTimeAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value.Kind != DateTimeKind.Utc) {
-            TPolicy.Fail(assertion.Context, message ?? "DateTime must be UTC.");
+            assertion.Fail(message ?? "DateTime must be UTC.");
         }
 
         return assertion;
@@ -81,9 +81,8 @@ public static class DateTimeAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (!(assertion.Value > exclusiveLowerBound)) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   assertion.Value,
-                                   message ?? $"Value must be after '{exclusiveLowerBound}'.");
+            assertion.FailOutOfRange(assertion.Value,
+                                     message ?? $"Value must be after '{exclusiveLowerBound}'.");
         }
 
         return assertion;
@@ -109,9 +108,8 @@ public static class DateTimeAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (!(assertion.Value >= lowerBound)) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   assertion.Value,
-                                   message ?? $"Value must not be before '{lowerBound}'.");
+            assertion.FailOutOfRange(assertion.Value,
+                                     message ?? $"Value must not be before '{lowerBound}'.");
         }
 
         return assertion;
@@ -137,9 +135,8 @@ public static class DateTimeAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (!(assertion.Value < exclusiveUpperBound)) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   assertion.Value,
-                                   message ?? $"Value must be before '{exclusiveUpperBound}'.");
+            assertion.FailOutOfRange(assertion.Value,
+                                     message ?? $"Value must be before '{exclusiveUpperBound}'.");
         }
 
         return assertion;
@@ -165,9 +162,8 @@ public static class DateTimeAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (!(assertion.Value <= upperBound)) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   assertion.Value,
-                                   message ?? $"Value must not be after '{upperBound}'.");
+            assertion.FailOutOfRange(assertion.Value,
+                                     message ?? $"Value must not be after '{upperBound}'.");
         }
 
         return assertion;

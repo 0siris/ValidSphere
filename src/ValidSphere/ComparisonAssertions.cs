@@ -30,8 +30,7 @@ public static class ComparisonAssertions {
         where T : IComparisonOperators<T, T, bool>
         where TPolicy : struct, IAssertionPolicy {
         if (!(assertion.Value > expected)) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   assertion.Value,
+            assertion.FailOutOfRange(assertion.Value,
                                    message ?? $"Value must be greater than '{expected}'.");
         }
 
@@ -54,8 +53,7 @@ public static class ComparisonAssertions {
         where T : IComparisonOperators<T, T, bool>
         where TPolicy : struct, IAssertionPolicy {
         if (!(assertion.Value > expected)) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   assertion.Value,
+            assertion.FailOutOfRange(assertion.Value,
                                    messageFactory(assertion.Context));
         }
 
@@ -85,8 +83,7 @@ public static class ComparisonAssertions {
         where T : IComparisonOperators<T, T, bool>
         where TPolicy : struct, IAssertionPolicy {
         if (!(assertion.Value >= expected)) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   assertion.Value,
+            assertion.FailOutOfRange(assertion.Value,
                                    message ?? $"Value must be greater than or equal to '{expected}'.");
         }
 
@@ -109,8 +106,7 @@ public static class ComparisonAssertions {
         where T : IComparisonOperators<T, T, bool>
         where TPolicy : struct, IAssertionPolicy {
         if (!(assertion.Value >= expected)) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   assertion.Value,
+            assertion.FailOutOfRange(assertion.Value,
                                    messageFactory(assertion.Context));
         }
 
@@ -140,8 +136,7 @@ public static class ComparisonAssertions {
         where T : IComparisonOperators<T, T, bool>
         where TPolicy : struct, IAssertionPolicy {
         if (!(assertion.Value < expected)) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   assertion.Value,
+            assertion.FailOutOfRange(assertion.Value,
                                    message ?? $"Value must be less than '{expected}'.");
         }
 
@@ -164,8 +159,7 @@ public static class ComparisonAssertions {
         where T : IComparisonOperators<T, T, bool>
         where TPolicy : struct, IAssertionPolicy {
         if (!(assertion.Value < expected)) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   assertion.Value,
+            assertion.FailOutOfRange(assertion.Value,
                                    messageFactory(assertion.Context));
         }
 
@@ -195,8 +189,7 @@ public static class ComparisonAssertions {
         where T : IComparisonOperators<T, T, bool>
         where TPolicy : struct, IAssertionPolicy {
         if (!(assertion.Value <= expected)) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   assertion.Value,
+            assertion.FailOutOfRange(assertion.Value,
                                    message ?? $"Value must be less than or equal to '{expected}'.");
         }
 
@@ -219,8 +212,7 @@ public static class ComparisonAssertions {
         where T : IComparisonOperators<T, T, bool>
         where TPolicy : struct, IAssertionPolicy {
         if (!(assertion.Value <= expected)) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   assertion.Value,
+            assertion.FailOutOfRange(assertion.Value,
                                    messageFactory(assertion.Context));
         }
 
@@ -255,8 +247,7 @@ public static class ComparisonAssertions {
         var value = assertion.Value;
 
         if (!(minimum <= value && value <= maximum)) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   value,
+            assertion.FailOutOfRange(value,
                                    message ?? $"Value must be in range [{minimum}, {maximum}].");
         }
 
@@ -282,8 +273,7 @@ public static class ComparisonAssertions {
         var value = assertion.Value;
 
         if (!(minimum <= value && value <= maximum)) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   value,
+            assertion.FailOutOfRange(value,
                                    messageFactory(assertion.Context));
         }
 

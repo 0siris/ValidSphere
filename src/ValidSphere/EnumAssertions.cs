@@ -37,7 +37,7 @@ public static class EnumAssertions {
 #else
         if (!System.Enum.IsDefined(assertion.Value))
 #endif
-            TPolicy.Fail(assertion.Context, message ?? "Enum value must be defined");
+            assertion.Fail(message ?? "Enum value must be defined");
 
         return assertion;
     }
@@ -62,7 +62,7 @@ public static class EnumAssertions {
 #else
         if (!System.Enum.IsDefined(assertion.Value))
 #endif
-            TPolicy.Fail(assertion.Context, messageFactory(assertion.Context));
+            assertion.Fail(messageFactory(assertion.Context));
 
         return assertion;
     }
@@ -92,7 +92,7 @@ public static class EnumAssertions {
         where TEnum : struct, Enum
         where TPolicy : struct, IAssertionPolicy {
         if (!assertion.Value.HasFlag(flag))
-            TPolicy.Fail(assertion.Context, message ?? $"Enum value must have flag '{flag}'.");
+            assertion.Fail(message ?? $"Enum value must have flag '{flag}'.");
 
         return assertion;
     }
@@ -114,7 +114,7 @@ public static class EnumAssertions {
         where TEnum : struct, Enum
         where TPolicy : struct, IAssertionPolicy {
         if (!assertion.Value.HasFlag(flag))
-            TPolicy.Fail(assertion.Context, messageFactory(assertion.Context));
+            assertion.Fail(messageFactory(assertion.Context));
 
         return assertion;
     }
@@ -147,19 +147,19 @@ public static class EnumAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            IsPolicy.FailNull(assertion.Context, "String must not be null.");
+            assertion.FailNull("String must not be null.");
 
 #if NETSTANDARD2_1
         if (!System.Enum.TryParse(typeof(TEnum), value, ignoreCase, out var parsedRaw) || parsedRaw is null)
-            IsPolicy.Fail(assertion.Context, message ?? $"String must be a valid '{typeof(TEnum).Name}' enum value.");
+            assertion.Fail(message ?? $"String must be a valid '{typeof(TEnum).Name}' enum value.");
 
         var parsed = (TEnum)parsedRaw;
 #else
         if (!System.Enum.TryParse<TEnum>(value, ignoreCase, out var parsed))
-            IsPolicy.Fail(assertion.Context, message ?? $"String must be a valid '{typeof(TEnum).Name}' enum value.");
+            assertion.Fail(message ?? $"String must be a valid '{typeof(TEnum).Name}' enum value.");
 #endif
 
-        return new Assertion<TEnum, IsPolicy>(parsed, assertion.Context);
+        return assertion.Refine(parsed);
     }
 
     /// <summary>
@@ -190,19 +190,19 @@ public static class EnumAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            GuardPolicy.FailNull(assertion.Context, "String must not be null.");
+            assertion.FailNull("String must not be null.");
 
 #if NETSTANDARD2_1
         if (!System.Enum.TryParse(typeof(TEnum), value, ignoreCase, out var parsedRaw) || parsedRaw is null)
-            GuardPolicy.Fail(assertion.Context, message ?? $"String must be a valid '{typeof(TEnum).Name}' enum value.");
+            assertion.Fail(message ?? $"String must be a valid '{typeof(TEnum).Name}' enum value.");
 
         var parsed = (TEnum)parsedRaw;
 #else
         if (!System.Enum.TryParse<TEnum>(value, ignoreCase, out var parsed))
-            GuardPolicy.Fail(assertion.Context, message ?? $"String must be a valid '{typeof(TEnum).Name}' enum value.");
+            assertion.Fail(message ?? $"String must be a valid '{typeof(TEnum).Name}' enum value.");
 #endif
 
-        return new Assertion<TEnum, GuardPolicy>(parsed, assertion.Context);
+        return assertion.Refine(parsed);
     }
 
     /// <summary>
@@ -233,16 +233,16 @@ public static class EnumAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            IsPolicy.FailNull(assertion.Context, "String must not be null.");
+            assertion.FailNull("String must not be null.");
 
 #if NETSTANDARD2_1
         if (!System.Enum.TryParse(typeof(TEnum), value, ignoreCase, out var parsedRaw) || parsedRaw is null)
-            IsPolicy.Fail(assertion.Context, message ?? $"String must be a valid '{typeof(TEnum).Name}' enum value.");
+            assertion.Fail(message ?? $"String must be a valid '{typeof(TEnum).Name}' enum value.");
 
         return (TEnum)parsedRaw;
 #else
         if (!System.Enum.TryParse<TEnum>(value, ignoreCase, out var parsed))
-            IsPolicy.Fail(assertion.Context, message ?? $"String must be a valid '{typeof(TEnum).Name}' enum value.");
+            assertion.Fail(message ?? $"String must be a valid '{typeof(TEnum).Name}' enum value.");
 
         return parsed;
 #endif
@@ -276,16 +276,16 @@ public static class EnumAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            GuardPolicy.FailNull(assertion.Context, "String must not be null.");
+            assertion.FailNull("String must not be null.");
 
 #if NETSTANDARD2_1
         if (!System.Enum.TryParse(typeof(TEnum), value, ignoreCase, out var parsedRaw) || parsedRaw is null)
-            GuardPolicy.Fail(assertion.Context, message ?? $"String must be a valid '{typeof(TEnum).Name}' enum value.");
+            assertion.Fail(message ?? $"String must be a valid '{typeof(TEnum).Name}' enum value.");
 
         return (TEnum)parsedRaw;
 #else
         if (!System.Enum.TryParse<TEnum>(value, ignoreCase, out var parsed))
-            GuardPolicy.Fail(assertion.Context, message ?? $"String must be a valid '{typeof(TEnum).Name}' enum value.");
+            assertion.Fail(message ?? $"String must be a valid '{typeof(TEnum).Name}' enum value.");
 
         return parsed;
 #endif
@@ -315,11 +315,11 @@ public static class EnumAssertions {
         var value = assertion.Value;
 
         if (!System.Enum.IsDefined(typeof(TEnum), value))
-            IsPolicy.Fail(assertion.Context, message ?? $"Value must be a defined '{typeof(TEnum).Name}' enum value.");
+            assertion.Fail(message ?? $"Value must be a defined '{typeof(TEnum).Name}' enum value.");
 
         var parsed = (TEnum)System.Enum.ToObject(typeof(TEnum), value);
 
-        return new Assertion<TEnum, IsPolicy>(parsed, assertion.Context);
+        return assertion.Refine(parsed);
     }
 
     /// <summary>
@@ -346,11 +346,11 @@ public static class EnumAssertions {
         var value = assertion.Value;
 
         if (!System.Enum.IsDefined(typeof(TEnum), value))
-            GuardPolicy.Fail(assertion.Context, message ?? $"Value must be a defined '{typeof(TEnum).Name}' enum value.");
+            assertion.Fail(message ?? $"Value must be a defined '{typeof(TEnum).Name}' enum value.");
 
         var parsed = (TEnum)System.Enum.ToObject(typeof(TEnum), value);
 
-        return new Assertion<TEnum, GuardPolicy>(parsed, assertion.Context);
+        return assertion.Refine(parsed);
     }
 
     /// <summary>
@@ -377,7 +377,7 @@ public static class EnumAssertions {
         var value = assertion.Value;
 
         if (!System.Enum.IsDefined(typeof(TEnum), value))
-            IsPolicy.Fail(assertion.Context, message ?? $"Value must be a defined '{typeof(TEnum).Name}' enum value.");
+            assertion.Fail(message ?? $"Value must be a defined '{typeof(TEnum).Name}' enum value.");
 
         return (TEnum)System.Enum.ToObject(typeof(TEnum), value);
     }
@@ -406,7 +406,7 @@ public static class EnumAssertions {
         var value = assertion.Value;
 
         if (!System.Enum.IsDefined(typeof(TEnum), value))
-            GuardPolicy.Fail(assertion.Context, message ?? $"Value must be a defined '{typeof(TEnum).Name}' enum value.");
+            assertion.Fail(message ?? $"Value must be a defined '{typeof(TEnum).Name}' enum value.");
 
         return (TEnum)System.Enum.ToObject(typeof(TEnum), value);
     }

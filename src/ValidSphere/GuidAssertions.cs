@@ -25,7 +25,7 @@ public static class GuidAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value == System.Guid.Empty)
-            TPolicy.Fail(assertion.Context, message ?? "Guid must not be empty.");
+            assertion.Fail(message ?? "Guid must not be empty.");
 
         return assertion;
     }
@@ -50,14 +50,14 @@ public static class GuidAssertions {
         var value = assertion.Value;
 
         if (!value.HasValue)
-            TPolicy.FailNull(assertion.Context, message ?? "Guid must not be null.");
+            assertion.FailNull(message ?? "Guid must not be null.");
 
         var guid = value.GetValueOrDefault();
 
         if (guid == System.Guid.Empty)
-            TPolicy.Fail(assertion.Context, message ?? "Guid must not be empty.");
+            assertion.Fail(message ?? "Guid must not be empty.");
 
-        return new Assertion<Guid, TPolicy>(guid, assertion.Context);
+        return assertion.Refine(guid);
     }
 
     /// <summary>
@@ -83,10 +83,10 @@ public static class GuidAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, "String must not be null.");
+            assertion.FailNull("String must not be null.");
 
         if (!System.Guid.TryParse(value, out var guid))
-            TPolicy.Fail(assertion.Context, message ?? "String must be a valid GUID.");
+            assertion.Fail(message ?? "String must be a valid GUID.");
 
         return guid;
     }
@@ -114,11 +114,11 @@ public static class GuidAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, "String must not be null.");
+            assertion.FailNull("String must not be null.");
 
         if (!System.Guid.TryParse(value, out var guid))
-            TPolicy.Fail(assertion.Context, message ?? "String must be a valid GUID.");
+            assertion.Fail(message ?? "String must be a valid GUID.");
 
-        return new Assertion<Guid, TPolicy>(guid, assertion.Context);
+        return assertion.Refine(guid);
     }
 }

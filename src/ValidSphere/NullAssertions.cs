@@ -30,9 +30,9 @@ public static class NullAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, message ?? "Value must not be null.");
+            assertion.FailNull(message ?? "Value must not be null.");
 
-        return new Assertion<T, TPolicy>(value!, assertion.Context);
+        return assertion.Refine(value!);
     }
 
     /// <summary>
@@ -54,9 +54,9 @@ public static class NullAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, messageFactory(assertion.Context));
+            assertion.FailNull(messageFactory(assertion.Context));
 
-        return new Assertion<T, TPolicy>(value!, assertion.Context);
+        return assertion.Refine(value!);
     }
 
     /// <summary>
@@ -82,9 +82,9 @@ public static class NullAssertions {
         var value = assertion.Value;
 
         if (!value.HasValue)
-            TPolicy.FailNull(assertion.Context, message ?? "Value must have a value.");
+            assertion.FailNull(message ?? "Value must have a value.");
 
-        return new Assertion<T, TPolicy>(value.GetValueOrDefault(), assertion.Context);
+        return assertion.Refine(value.GetValueOrDefault());
     }
 
     /// <summary>
@@ -106,9 +106,9 @@ public static class NullAssertions {
         var value = assertion.Value;
 
         if (!value.HasValue)
-            TPolicy.FailNull(assertion.Context, messageFactory(assertion.Context));
+            assertion.FailNull(messageFactory(assertion.Context));
 
-        return new Assertion<T, TPolicy>(value.GetValueOrDefault(), assertion.Context);
+        return assertion.Refine(value.GetValueOrDefault());
     }
 
     /// <summary>
@@ -131,7 +131,7 @@ public static class NullAssertions {
         where T : class
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value is not null)
-            TPolicy.Fail(assertion.Context, message ?? "Value must be null.");
+            assertion.Fail(message ?? "Value must be null.");
 
         return assertion;
     }
@@ -152,7 +152,7 @@ public static class NullAssertions {
         where T : class
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value is not null)
-            TPolicy.Fail(assertion.Context, messageFactory(assertion.Context));
+            assertion.Fail(messageFactory(assertion.Context));
 
         return assertion;
     }
@@ -177,7 +177,7 @@ public static class NullAssertions {
         where T : struct
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value.HasValue)
-            TPolicy.Fail(assertion.Context, message ?? "Value must be null.");
+            assertion.Fail(message ?? "Value must be null.");
 
         return assertion;
     }
@@ -198,7 +198,7 @@ public static class NullAssertions {
         where T : struct
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value.HasValue)
-            TPolicy.Fail(assertion.Context, messageFactory(assertion.Context));
+            assertion.Fail(messageFactory(assertion.Context));
 
         return assertion;
     }

@@ -25,7 +25,7 @@ public static class CharAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (!char.IsLetter(assertion.Value))
-            TPolicy.Fail(assertion.Context, message ?? "Char must be a letter.");
+            assertion.Fail(message ?? "Char must be a letter.");
 
         return assertion;
     }
@@ -48,7 +48,7 @@ public static class CharAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (!char.IsDigit(assertion.Value))
-            TPolicy.Fail(assertion.Context, message ?? "Char must be a digit.");
+            assertion.Fail(message ?? "Char must be a digit.");
 
         return assertion;
     }
@@ -71,7 +71,7 @@ public static class CharAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (!char.IsWhiteSpace(assertion.Value))
-            TPolicy.Fail(assertion.Context, message ?? "Char must be whitespace.");
+            assertion.Fail(message ?? "Char must be whitespace.");
 
         return assertion;
     }
@@ -94,7 +94,7 @@ public static class CharAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (!char.IsUpper(assertion.Value))
-            TPolicy.Fail(assertion.Context, message ?? "Char must be uppercase.");
+            assertion.Fail(message ?? "Char must be uppercase.");
 
         return assertion;
     }
@@ -117,7 +117,7 @@ public static class CharAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (!char.IsLower(assertion.Value))
-            TPolicy.Fail(assertion.Context, message ?? "Char must be lowercase.");
+            assertion.Fail(message ?? "Char must be lowercase.");
 
         return assertion;
     }

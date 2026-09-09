@@ -37,10 +37,10 @@ public static class UriAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, "String must not be null.");
+            assertion.FailNull("String must not be null.");
 
         if (!System.Uri.TryCreate(value, kind, out var uri) || uri is null)
-            TPolicy.Fail(assertion.Context, message ?? $"String must be a valid '{kind}' URI.");
+            assertion.Fail(message ?? $"String must be a valid '{kind}' URI.");
 
         return uri;
     }
@@ -71,12 +71,12 @@ public static class UriAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, "String must not be null.");
+            assertion.FailNull("String must not be null.");
 
         if (!System.Uri.TryCreate(value, kind, out var uri) || uri is null)
-            TPolicy.Fail(assertion.Context, message ?? $"String must be a valid '{kind}' URI.");
+            assertion.Fail(message ?? $"String must be a valid '{kind}' URI.");
 
-        return new Assertion<Uri, TPolicy>(uri, assertion.Context);
+        return assertion.Refine(uri);
     }
 
     /// <summary>
@@ -99,10 +99,10 @@ public static class UriAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, message ?? "Uri must not be null.");
+            assertion.FailNull(message ?? "Uri must not be null.");
 
         if (!value.IsAbsoluteUri)
-            TPolicy.Fail(assertion.Context, message ?? "Uri must be absolute.");
+            assertion.Fail(message ?? "Uri must be absolute.");
 
         return assertion;
     }
@@ -133,10 +133,10 @@ public static class UriAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, message ?? "Uri must not be null.");
+            assertion.FailNull(message ?? "Uri must not be null.");
 
         if (!value.Scheme.Equals(scheme, comparison))
-            TPolicy.Fail(assertion.Context, message ?? $"Uri must have scheme '{scheme}'.");
+            assertion.Fail(message ?? $"Uri must have scheme '{scheme}'.");
 
         return assertion;
     }
@@ -167,10 +167,10 @@ public static class UriAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, message ?? "Uri must not be null.");
+            assertion.FailNull(message ?? "Uri must not be null.");
 
         if (!value.Host.Equals(host, comparison))
-            TPolicy.Fail(assertion.Context, message ?? $"Uri must have host '{host}'.");
+            assertion.Fail(message ?? $"Uri must have host '{host}'.");
 
         return assertion;
     }
@@ -197,10 +197,10 @@ public static class UriAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, message ?? "Uri must not be null.");
+            assertion.FailNull(message ?? "Uri must not be null.");
 
         if (value.Port != port)
-            TPolicy.Fail(assertion.Context, message ?? $"Uri must have port '{port}'.");
+            assertion.Fail(message ?? $"Uri must have port '{port}'.");
 
         return assertion;
     }
@@ -225,10 +225,10 @@ public static class UriAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, message ?? "Uri must not be null.");
+            assertion.FailNull(message ?? "Uri must not be null.");
 
         if (!value.IsLoopback)
-            TPolicy.Fail(assertion.Context, message ?? "Uri must be a loopback URI.");
+            assertion.Fail(message ?? "Uri must be a loopback URI.");
 
         return assertion;
     }

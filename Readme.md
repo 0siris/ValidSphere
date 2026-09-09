@@ -1565,6 +1565,31 @@ on the successful path.
 
 ---
 
+## Custom Exceptions
+
+For one-off failure behavior, a custom exception factory can be attached to an assertion chain:
+
+```csharp
+value.Is()
+     .OnFailure(static failure => new DomainException(failure.Message))
+     .Greater(0);
+```
+
+The factory receives an AssertionFailure containing:
+
+- failure kind
+- message
+- assertion context
+- actual value where applicable
+
+Without OnFailure(), the normal assertion policy remains responsible for the exception type.
+
+For reusable failure semantics across many call sites, prefer a custom IAssertionPolicy.
+
+Prefer non-capturing `static` lambdas when no external state is required. Capturing lambdas may allocate a closure.
+
+---
+
 # Appendix
 
 ## Performance Model

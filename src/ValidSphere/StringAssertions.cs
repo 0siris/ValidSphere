@@ -28,12 +28,12 @@ public static class StringAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, message ?? "String must not be null.");
+            assertion.FailNull(message ?? "String must not be null.");
 
         if (value.Length == 0)
-            TPolicy.Fail(assertion.Context, message ?? "String must not be empty.");
+            assertion.Fail(message ?? "String must not be empty.");
 
-        return new Assertion<string, TPolicy>(value, assertion.Context);
+        return assertion.Refine(value!);
     }
     /// <summary>
     ///     Asserts that the string is neither <see langword="null" /> nor empty, building the failure message lazily.
@@ -52,12 +52,12 @@ public static class StringAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, messageFactory(assertion.Context));
+            assertion.FailNull(messageFactory(assertion.Context));
 
         if (value.Length == 0)
-            TPolicy.Fail(assertion.Context, messageFactory(assertion.Context));
+            assertion.Fail(messageFactory(assertion.Context));
 
-        return new Assertion<string, TPolicy>(value, assertion.Context);
+        return assertion.Refine(value!);
     }
 
 
@@ -82,12 +82,12 @@ public static class StringAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, message ?? "String must not be null.");
+            assertion.FailNull(message ?? "String must not be null.");
 
         if (string.IsNullOrWhiteSpace(value))
-            TPolicy.Fail(assertion.Context, message ?? "String must not be empty or whitespace.");
+            assertion.Fail(message ?? "String must not be empty or whitespace.");
 
-        return new Assertion<string, TPolicy>(value, assertion.Context);
+        return assertion.Refine(value!);
     }
     /// <summary>
     ///     Asserts that the string is neither <see langword="null" />, empty, nor whitespace, building the failure message lazily.
@@ -106,12 +106,12 @@ public static class StringAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, messageFactory(assertion.Context));
+            assertion.FailNull(messageFactory(assertion.Context));
 
         if (string.IsNullOrWhiteSpace(value))
-            TPolicy.Fail(assertion.Context, messageFactory(assertion.Context));
+            assertion.Fail(messageFactory(assertion.Context));
 
-        return new Assertion<string, TPolicy>(value, assertion.Context);
+        return assertion.Refine(value!);
     }
 
 
@@ -133,7 +133,7 @@ public static class StringAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value.Length == 0)
-            TPolicy.Fail(assertion.Context, message ?? "String must not be empty.");
+            assertion.Fail(message ?? "String must not be empty.");
 
         return assertion;
     }
@@ -152,7 +152,7 @@ public static class StringAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value.Length == 0)
-            TPolicy.Fail(assertion.Context, messageFactory(assertion.Context));
+            assertion.Fail(messageFactory(assertion.Context));
 
         return assertion;
     }
@@ -178,8 +178,7 @@ public static class StringAssertions {
         var actual = assertion.Value.Length;
 
         if (actual != expected) {
-            TPolicy.Fail(assertion.Context,
-                         message ?? $"Expected length '{expected}', but found '{actual}'.");
+            assertion.Fail(message ?? $"Expected length '{expected}', but found '{actual}'.");
         }
 
         return assertion;
@@ -205,7 +204,7 @@ public static class StringAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value.Length < minimum) {
-            TPolicy.Fail(assertion.Context, message ?? $"String length must be at least '{minimum}'.");
+            assertion.Fail(message ?? $"String length must be at least '{minimum}'.");
         }
 
         return assertion;
@@ -231,7 +230,7 @@ public static class StringAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value.Length > maximum) {
-            TPolicy.Fail(assertion.Context, message ?? $"String length must be at most '{maximum}'.");
+            assertion.Fail(message ?? $"String length must be at most '{maximum}'.");
         }
 
         return assertion;
@@ -262,8 +261,7 @@ public static class StringAssertions {
         var actual = assertion.Value.Length;
 
         if (actual < minimum || actual > maximum) {
-            TPolicy.Fail(assertion.Context,
-                         message ?? $"String length must be in range [{minimum}, {maximum}].");
+            assertion.Fail(message ?? $"String length must be in range [{minimum}, {maximum}].");
         }
 
         return assertion;
@@ -293,7 +291,7 @@ public static class StringAssertions {
         ThrowHelper.ThrowIfNull(substring, nameof(substring));
 
         if (!assertion.Value.Contains(substring, comparison)) {
-            TPolicy.Fail(assertion.Context, message ?? $"String must contain '{substring}'.");
+            assertion.Fail(message ?? $"String must contain '{substring}'.");
         }
 
         return assertion;
@@ -323,7 +321,7 @@ public static class StringAssertions {
         ThrowHelper.ThrowIfNull(prefix, nameof(prefix));
 
         if (!assertion.Value.StartsWith(prefix, comparison)) {
-            TPolicy.Fail(assertion.Context, message ?? $"String must start with '{prefix}'.");
+            assertion.Fail(message ?? $"String must start with '{prefix}'.");
         }
 
         return assertion;
@@ -353,7 +351,7 @@ public static class StringAssertions {
         ThrowHelper.ThrowIfNull(suffix, nameof(suffix));
 
         if (!assertion.Value.EndsWith(suffix, comparison)) {
-            TPolicy.Fail(assertion.Context, message ?? $"String must end with '{suffix}'.");
+            assertion.Fail(message ?? $"String must end with '{suffix}'.");
         }
 
         return assertion;
@@ -381,7 +379,7 @@ public static class StringAssertions {
         ThrowHelper.ThrowIfNull(regex, nameof(regex));
 
         if (!regex.IsMatch(assertion.Value)) {
-            TPolicy.Fail(assertion.Context, message ?? "String must match the required pattern.");
+            assertion.Fail(message ?? "String must match the required pattern.");
         }
 
         return assertion;

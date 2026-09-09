@@ -25,8 +25,7 @@ public static class TimeSpanAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (!(assertion.Value > TimeSpan.Zero)) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   assertion.Value,
+            assertion.FailOutOfRange(assertion.Value,
                                    message ?? "Value must be positive.");
         }
 
@@ -51,8 +50,7 @@ public static class TimeSpanAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (!(assertion.Value >= TimeSpan.Zero)) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   assertion.Value,
+            assertion.FailOutOfRange(assertion.Value,
                                    message ?? "Value must be non-negative.");
         }
 
@@ -77,7 +75,7 @@ public static class TimeSpanAssertions {
     )
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value != TimeSpan.Zero) {
-            TPolicy.Fail(assertion.Context, message ?? "Value must be zero.");
+            assertion.Fail(message ?? "Value must be zero.");
         }
 
         return assertion;
@@ -105,8 +103,7 @@ public static class TimeSpanAssertions {
         var value = assertion.Value;
 
         if (!(TimeSpan.Zero <= value && value <= maximum)) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   value,
+            assertion.FailOutOfRange(value,
                                    message ?? $"Timeout must be in range [{TimeSpan.Zero}, '{maximum}'].");
         }
 

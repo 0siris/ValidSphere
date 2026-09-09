@@ -50,8 +50,7 @@ public static class FloatingPointAssertions {
         var difference = T.Abs(actual - expected);
 
         if (T.IsNaN(difference) || difference > tolerance) {
-            TPolicy.Fail(assertion.Context,
-                         message ?? $"Expected '{expected}' ± '{tolerance}', but found '{actual}'.");
+            assertion.Fail(message ?? $"Expected '{expected}' ± '{tolerance}', but found '{actual}'.");
         }
 
         return assertion;
@@ -88,7 +87,7 @@ public static class FloatingPointAssertions {
         var difference = T.Abs(actual - expected);
 
         if (T.IsNaN(difference) || difference > tolerance) {
-            TPolicy.Fail(assertion.Context, messageFactory(assertion.Context));
+            assertion.Fail(messageFactory(assertion.Context));
         }
 
         return assertion;
@@ -113,7 +112,7 @@ public static class FloatingPointAssertions {
         where T : IFloatingPointIeee754<T>
         where TPolicy : struct, IAssertionPolicy {
         if (T.IsNaN(assertion.Value)) {
-            TPolicy.Fail(assertion.Context, message ?? "Value must not be NaN.");
+            assertion.Fail(message ?? "Value must not be NaN.");
         }
 
         return assertion;
@@ -139,7 +138,7 @@ public static class FloatingPointAssertions {
         where T : IFloatingPointIeee754<T>
         where TPolicy : struct, IAssertionPolicy {
         if (!T.IsFinite(assertion.Value)) {
-            TPolicy.Fail(assertion.Context, message ?? "Value must be finite.");
+            assertion.Fail(message ?? "Value must be finite.");
         }
 
         return assertion;
@@ -165,7 +164,7 @@ public static class FloatingPointAssertions {
         where T : IFloatingPointIeee754<T>
         where TPolicy : struct, IAssertionPolicy {
         if (!T.IsInfinity(assertion.Value)) {
-            TPolicy.Fail(assertion.Context, message ?? "Value must be infinite.");
+            assertion.Fail(message ?? "Value must be infinite.");
         }
 
         return assertion;
@@ -191,7 +190,7 @@ public static class FloatingPointAssertions {
         where T : IFloatingPointIeee754<T>
         where TPolicy : struct, IAssertionPolicy {
         if (!T.IsPositiveInfinity(assertion.Value)) {
-            TPolicy.Fail(assertion.Context, message ?? "Value must be positive infinity.");
+            assertion.Fail(message ?? "Value must be positive infinity.");
         }
 
         return assertion;
@@ -217,7 +216,7 @@ public static class FloatingPointAssertions {
         where T : IFloatingPointIeee754<T>
         where TPolicy : struct, IAssertionPolicy {
         if (!T.IsNegativeInfinity(assertion.Value)) {
-            TPolicy.Fail(assertion.Context, message ?? "Value must be negative infinity.");
+            assertion.Fail(message ?? "Value must be negative infinity.");
         }
 
         return assertion;

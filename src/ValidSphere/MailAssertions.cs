@@ -36,7 +36,7 @@ public static class MailAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, "String must not be null.");
+            assertion.FailNull("String must not be null.");
 
 #if NETSTANDARD2_1
         MailAddress? address = null;
@@ -49,7 +49,7 @@ public static class MailAssertions {
 #else
         if (!System.Net.Mail.MailAddress.TryCreate(value, out var address) || address is null)
 #endif
-            TPolicy.Fail(assertion.Context, message ?? "String must be a valid mail address.");
+            assertion.Fail(message ?? "String must be a valid mail address.");
 
         return address;
     }
@@ -78,7 +78,7 @@ public static class MailAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, "String must not be null.");
+            assertion.FailNull("String must not be null.");
 
 #if NETSTANDARD2_1
         MailAddress? address = null;
@@ -91,9 +91,9 @@ public static class MailAssertions {
 #else
         if (!System.Net.Mail.MailAddress.TryCreate(value, out var address) || address is null)
 #endif
-            TPolicy.Fail(assertion.Context, message ?? "String must be a valid mail address.");
+            assertion.Fail(message ?? "String must be a valid mail address.");
 
-        return new Assertion<MailAddress, TPolicy>(address, assertion.Context);
+        return assertion.Refine(address);
     }
 
     /// <summary>
@@ -122,10 +122,10 @@ public static class MailAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, message ?? "Mail address must not be null.");
+            assertion.FailNull(message ?? "Mail address must not be null.");
 
         if (!value.Host.Equals(host, comparison))
-            TPolicy.Fail(assertion.Context, message ?? $"Mail address must have host '{host}'.");
+            assertion.Fail(message ?? $"Mail address must have host '{host}'.");
 
         return assertion;
     }
@@ -156,10 +156,10 @@ public static class MailAssertions {
         var value = assertion.Value;
 
         if (value is null)
-            TPolicy.FailNull(assertion.Context, message ?? "Mail address must not be null.");
+            assertion.FailNull(message ?? "Mail address must not be null.");
 
         if (!value.User.Equals(user, comparison))
-            TPolicy.Fail(assertion.Context, message ?? $"Mail address must have user '{user}'.");
+            assertion.Fail(message ?? $"Mail address must have user '{user}'.");
 
         return assertion;
     }

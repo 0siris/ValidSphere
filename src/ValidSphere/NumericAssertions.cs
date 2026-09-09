@@ -28,8 +28,7 @@ public static class NumericAssertions {
         where T : IComparisonOperators<T, T, bool>, INumberBase<T>
         where TPolicy : struct, IAssertionPolicy {
         if (!(assertion.Value > T.Zero)) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   assertion.Value,
+            assertion.FailOutOfRange(assertion.Value,
                                    message ?? "Value must be positive.");
         }
 
@@ -56,8 +55,7 @@ public static class NumericAssertions {
         where T : IComparisonOperators<T, T, bool>, INumberBase<T>
         where TPolicy : struct, IAssertionPolicy {
         if (!(assertion.Value >= T.Zero)) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   assertion.Value,
+            assertion.FailOutOfRange(assertion.Value,
                                    message ?? "Value must be non-negative.");
         }
 
@@ -84,8 +82,7 @@ public static class NumericAssertions {
         where T : IComparisonOperators<T, T, bool>, INumberBase<T>
         where TPolicy : struct, IAssertionPolicy {
         if (!(assertion.Value < T.Zero)) {
-            TPolicy.FailOutOfRange(assertion.Context,
-                                   assertion.Value,
+            assertion.FailOutOfRange(assertion.Value,
                                    message ?? "Value must be negative.");
         }
 
@@ -112,7 +109,7 @@ public static class NumericAssertions {
         where T : IEqualityOperators<T, T, bool>, INumberBase<T>
         where TPolicy : struct, IAssertionPolicy {
         if (!(assertion.Value == T.Zero)) {
-            TPolicy.Fail(assertion.Context, message ?? "Value must be zero.");
+            assertion.Fail(message ?? "Value must be zero.");
         }
 
         return assertion;
@@ -138,7 +135,7 @@ public static class NumericAssertions {
         where T : IEqualityOperators<T, T, bool>, INumberBase<T>
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value == T.Zero) {
-            TPolicy.Fail(assertion.Context, message ?? "Value must be non-zero.");
+            assertion.Fail(message ?? "Value must be non-zero.");
         }
 
         return assertion;
@@ -164,7 +161,7 @@ public static class NumericAssertions {
         where T : IBinaryInteger<T>
         where TPolicy : struct, IAssertionPolicy {
         if (!T.IsEvenInteger(assertion.Value)) {
-            TPolicy.Fail(assertion.Context, message ?? "Value must be even.");
+            assertion.Fail(message ?? "Value must be even.");
         }
 
         return assertion;
@@ -190,7 +187,7 @@ public static class NumericAssertions {
         where T : IBinaryInteger<T>
         where TPolicy : struct, IAssertionPolicy {
         if (!T.IsOddInteger(assertion.Value)) {
-            TPolicy.Fail(assertion.Context, message ?? "Value must be odd.");
+            assertion.Fail(message ?? "Value must be odd.");
         }
 
         return assertion;
@@ -222,7 +219,7 @@ public static class NumericAssertions {
         where T : IBinaryInteger<T>
         where TPolicy : struct, IAssertionPolicy {
         if (assertion.Value % divisor != T.Zero) {
-            TPolicy.Fail(assertion.Context, message ?? $"Value must be divisible by '{divisor}'.");
+            assertion.Fail(message ?? $"Value must be divisible by '{divisor}'.");
         }
 
         return assertion;
