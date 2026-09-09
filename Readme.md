@@ -132,23 +132,11 @@ ValidSphere is not a DTO or object validation framework, a replacement for Fluen
 
 ## Installation
 
-Add the project or package reference to the consuming project.
+```bash
+dotnet add package ValidSphere --prerelease
+```
+
 The package targets `net10.0`, `net8.0` (identical API) and `netstandard2.1` (without generic-math comparisons, numeric, floating-point, and date-only checks).
-
-Builds are deterministic (`Deterministic`, `ContinuousIntegrationBuild` on CI) and SourceLink-enabled (commit in the product version, PDBs in the symbol package). Verify with `dotnet tool install -g sourcelink` followed by `sourcelink test <package>.pdb`.
-
-For the preview package:
-```xml
-<PackageReference Include="ValidSphere" Version="0.2.0-preview.4" />
-```
-
-For a source/project reference:
-
-```xml
-<ItemGroup>
-    <ProjectReference Include="..\extern\ValidSphere\ValidSphere.csproj" />
-</ItemGroup>
-```
 
 Then import the namespace:
 
