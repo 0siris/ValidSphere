@@ -1,13 +1,15 @@
 ﻿using System.Collections;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
 namespace ValidSphere;
 
 /// <summary>
-///     Provides assertions for collection sizes and array lengths.
+///     Provides assertions for collection and set sizes and array lengths.
 /// </summary>
-public static class CollectionAssertions {
+public static class CollectionAssertions
+{
     /// <summary>
     ///     Asserts that the collection contains at least one element.
     /// </summary>
@@ -26,12 +28,14 @@ public static class CollectionAssertions {
         string? message = null
     )
         where TCollection : ICollection
-        where TPolicy : struct, IAssertionPolicy {
+        where TPolicy : struct, IAssertionPolicy
+    {
         if (assertion.Value.Count == 0)
             assertion.Fail(message ?? "Collection must not be empty.");
 
-        return assertion;
+        return assertion.Refine(assertion.Value!);
     }
+
     /// <summary>
     ///     Asserts that the collection contains at least one element, building the failure message lazily.
     /// </summary>
@@ -46,11 +50,12 @@ public static class CollectionAssertions {
         Func<AssertionContext, string> messageFactory
     )
         where TCollection : ICollection
-        where TPolicy : struct, IAssertionPolicy {
+        where TPolicy : struct, IAssertionPolicy
+    {
         if (assertion.Value.Count == 0)
             assertion.Fail(messageFactory(assertion.Context));
 
-        return assertion;
+        return assertion.Refine(assertion.Value!);
     }
 
 
@@ -74,15 +79,18 @@ public static class CollectionAssertions {
         string? message = null
     )
         where TCollection : ICollection
-        where TPolicy : struct, IAssertionPolicy {
+        where TPolicy : struct, IAssertionPolicy
+    {
         var actual = assertion.Value.Count;
 
-        if (actual != expected) {
+        if (actual != expected)
+        {
             assertion.Fail(message ?? $"Expected count '{expected}', but found '{actual}'.");
         }
 
         return assertion;
     }
+
     /// <summary>
     ///     Asserts that the collection contains exactly the specified number of elements, building the failure message lazily.
     /// </summary>
@@ -98,10 +106,12 @@ public static class CollectionAssertions {
         Func<AssertionContext, string> messageFactory
     )
         where TCollection : ICollection
-        where TPolicy : struct, IAssertionPolicy {
+        where TPolicy : struct, IAssertionPolicy
+    {
         var actual = assertion.Value.Count;
 
-        if (actual != expected) {
+        if (actual != expected)
+        {
             assertion.Fail(messageFactory(assertion.Context));
         }
 
@@ -128,15 +138,18 @@ public static class CollectionAssertions {
         int expected,
         string? message = null
     )
-        where TPolicy : struct, IAssertionPolicy {
+        where TPolicy : struct, IAssertionPolicy
+    {
         var actual = assertion.Value.Length;
 
-        if (actual != expected) {
+        if (actual != expected)
+        {
             assertion.Fail(message ?? $"Expected length '{expected}', but found '{actual}'.");
         }
 
         return assertion;
     }
+
     /// <summary>
     ///     Asserts that the array has exactly the specified length, building the failure message lazily.
     /// </summary>
@@ -151,15 +164,18 @@ public static class CollectionAssertions {
         int expected,
         Func<AssertionContext, string> messageFactory
     )
-        where TPolicy : struct, IAssertionPolicy {
+        where TPolicy : struct, IAssertionPolicy
+    {
         var actual = assertion.Value.Length;
 
-        if (actual != expected) {
+        if (actual != expected)
+        {
             assertion.Fail(messageFactory(assertion.Context));
         }
 
         return assertion;
     }
+
     /// <summary>
     ///     Asserts that the collection contains at least the specified number of elements.
     /// </summary>
@@ -180,10 +196,12 @@ public static class CollectionAssertions {
         string? message = null
     )
         where TCollection : ICollection
-        where TPolicy : struct, IAssertionPolicy {
-        if (assertion.Value.Count < minimum) {
+        where TPolicy : struct, IAssertionPolicy
+    {
+        if (assertion.Value.Count < minimum)
+        {
             assertion.FailOutOfRange(assertion.Value.Count,
-                                   message ?? $"Collection must contain at least '{minimum}' elements.");
+                message ?? $"Collection must contain at least '{minimum}' elements.");
         }
 
         return assertion;
@@ -209,10 +227,12 @@ public static class CollectionAssertions {
         string? message = null
     )
         where TCollection : ICollection
-        where TPolicy : struct, IAssertionPolicy {
-        if (assertion.Value.Count > maximum) {
+        where TPolicy : struct, IAssertionPolicy
+    {
+        if (assertion.Value.Count > maximum)
+        {
             assertion.FailOutOfRange(assertion.Value.Count,
-                                   message ?? $"Collection must contain at most '{maximum}' elements.");
+                message ?? $"Collection must contain at most '{maximum}' elements.");
         }
 
         return assertion;
@@ -241,12 +261,14 @@ public static class CollectionAssertions {
         string? message = null
     )
         where TCollection : ICollection
-        where TPolicy : struct, IAssertionPolicy {
+        where TPolicy : struct, IAssertionPolicy
+    {
         var actual = assertion.Value.Count;
 
-        if (actual < minimum || actual > maximum) {
+        if (actual < minimum || actual > maximum)
+        {
             assertion.FailOutOfRange(actual,
-                                   message ?? $"Collection count must be in range [{minimum}, {maximum}].");
+                message ?? $"Collection count must be in range [{minimum}, {maximum}].");
         }
 
         return assertion;
@@ -269,7 +291,8 @@ public static class CollectionAssertions {
         this Assertion<IReadOnlyCollection<T>, TPolicy> assertion,
         string? message = null
     )
-        where TPolicy : struct, IAssertionPolicy {
+        where TPolicy : struct, IAssertionPolicy
+    {
         if (assertion.Value.Count == 0)
             assertion.Fail(message ?? "Collection must not be empty.");
 
@@ -295,10 +318,12 @@ public static class CollectionAssertions {
         int expected,
         string? message = null
     )
-        where TPolicy : struct, IAssertionPolicy {
+        where TPolicy : struct, IAssertionPolicy
+    {
         var actual = assertion.Value.Count;
 
-        if (actual != expected) {
+        if (actual != expected)
+        {
             assertion.Fail(message ?? $"Expected count '{expected}', but found '{actual}'.");
         }
 
@@ -324,10 +349,12 @@ public static class CollectionAssertions {
         int minimum,
         string? message = null
     )
-        where TPolicy : struct, IAssertionPolicy {
-        if (assertion.Value.Count < minimum) {
+        where TPolicy : struct, IAssertionPolicy
+    {
+        if (assertion.Value.Count < minimum)
+        {
             assertion.FailOutOfRange(assertion.Value.Count,
-                                   message ?? $"Collection must contain at least '{minimum}' elements.");
+                message ?? $"Collection must contain at least '{minimum}' elements.");
         }
 
         return assertion;
@@ -352,10 +379,12 @@ public static class CollectionAssertions {
         int maximum,
         string? message = null
     )
-        where TPolicy : struct, IAssertionPolicy {
-        if (assertion.Value.Count > maximum) {
+        where TPolicy : struct, IAssertionPolicy
+    {
+        if (assertion.Value.Count > maximum)
+        {
             assertion.FailOutOfRange(assertion.Value.Count,
-                                   message ?? $"Collection must contain at most '{maximum}' elements.");
+                message ?? $"Collection must contain at most '{maximum}' elements.");
         }
 
         return assertion;
@@ -383,12 +412,14 @@ public static class CollectionAssertions {
         int maximum,
         string? message = null
     )
-        where TPolicy : struct, IAssertionPolicy {
+        where TPolicy : struct, IAssertionPolicy
+    {
         var actual = assertion.Value.Count;
 
-        if (actual < minimum || actual > maximum) {
+        if (actual < minimum || actual > maximum)
+        {
             assertion.FailOutOfRange(actual,
-                                   message ?? $"Collection count must be in range [{minimum}, {maximum}].");
+                message ?? $"Collection count must be in range [{minimum}, {maximum}].");
         }
 
         return assertion;
@@ -413,10 +444,12 @@ public static class CollectionAssertions {
         int minimum,
         string? message = null
     )
-        where TPolicy : struct, IAssertionPolicy {
-        if (assertion.Value.Length < minimum) {
+        where TPolicy : struct, IAssertionPolicy
+    {
+        if (assertion.Value.Length < minimum)
+        {
             assertion.FailOutOfRange(assertion.Value.Length,
-                                   message ?? $"Array must have at least '{minimum}' elements.");
+                message ?? $"Array must have at least '{minimum}' elements.");
         }
 
         return assertion;
@@ -441,10 +474,12 @@ public static class CollectionAssertions {
         int maximum,
         string? message = null
     )
-        where TPolicy : struct, IAssertionPolicy {
-        if (assertion.Value.Length > maximum) {
+        where TPolicy : struct, IAssertionPolicy
+    {
+        if (assertion.Value.Length > maximum)
+        {
             assertion.FailOutOfRange(assertion.Value.Length,
-                                   message ?? $"Array must have at most '{maximum}' elements.");
+                message ?? $"Array must have at most '{maximum}' elements.");
         }
 
         return assertion;
@@ -472,12 +507,14 @@ public static class CollectionAssertions {
         int maximum,
         string? message = null
     )
-        where TPolicy : struct, IAssertionPolicy {
+        where TPolicy : struct, IAssertionPolicy
+    {
         var actual = assertion.Value.Length;
 
-        if (actual < minimum || actual > maximum) {
+        if (actual < minimum || actual > maximum)
+        {
             assertion.FailOutOfRange(actual,
-                                   message ?? $"Array length must be in range [{minimum}, {maximum}].");
+                message ?? $"Array length must be in range [{minimum}, {maximum}].");
         }
 
         return assertion;
@@ -507,15 +544,403 @@ public static class CollectionAssertions {
         string? message = null
     )
         where TCollection : ICollection<TItem>
-        where TPolicy : struct, IAssertionPolicy {
+        where TPolicy : struct, IAssertionPolicy
+    {
         var comparer = EqualityComparer<TItem>.Default;
 
-        foreach (var item in assertion.Value) {
+        foreach (var item in assertion.Value)
+        {
             if (comparer.Equals(item, expected))
                 return assertion;
         }
 
         assertion.Fail(message ?? $"Collection must contain '{expected}'.");
+
+        return assertion;
+    }
+
+    /// <summary>
+    ///     Asserts that the set contains at least one element.
+    /// </summary>
+    /// <typeparam name="T">The element type.</typeparam>
+    /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
+    /// <param name="assertion">The current assertion.</param>
+    /// <param name="message">
+    ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
+    /// </param>
+    /// <returns>The original assertion for further chaining or implicit value extraction.</returns>
+    /// <remarks>
+    ///     Declared per set type (<see cref="HashSet{T}" />, <see cref="SortedSet{T}" />) so the
+    ///     element type infers from the assertion subject. These sets implement only the generic
+    ///     <see cref="ICollection{T}" /> and therefore never match the non-generic
+    ///     <see cref="ICollection" /> overloads; a single generic
+    ///     <c>TSet : ICollection&lt;T&gt;</c> overload would force callers to specify
+    ///     <c>T</c> explicitly because type inference ignores constraints.
+    /// </remarks>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<HashSet<T>?, TPolicy> NotEmpty<T, TPolicy>(
+        this Assertion<HashSet<T>?, TPolicy> assertion,
+        string? message = null
+    )
+        where TPolicy : struct, IAssertionPolicy
+    {
+        if (assertion.Value!.Count == 0)
+            assertion.Fail(message ?? "Collection must not be empty.");
+
+        return assertion;
+    }
+
+    /// <summary>
+    ///     Asserts that the set contains at least one element, building the failure message lazily.
+    /// </summary>
+    /// <remarks>
+    ///     <paramref name="messageFactory" /> is required, receives the call-site context, and is invoked only in the failure branch.
+    /// </remarks>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<HashSet<T>?, TPolicy> NotEmpty<T, TPolicy>(
+        this Assertion<HashSet<T>?, TPolicy> assertion,
+        Func<AssertionContext, string> messageFactory
+    )
+        where TPolicy : struct, IAssertionPolicy
+    {
+        if (assertion.Value!.Count == 0)
+            assertion.Fail(messageFactory(assertion.Context));
+
+        return assertion;
+    }
+
+    /// <summary>
+    ///     Asserts that the set contains exactly the specified number of elements.
+    /// </summary>
+    /// <typeparam name="T">The element type.</typeparam>
+    /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
+    /// <param name="assertion">The current assertion.</param>
+    /// <param name="expected">The required number of elements.</param>
+    /// <param name="message">
+    ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
+    /// </param>
+    /// <returns>The original assertion for further chaining or implicit value extraction.</returns>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<HashSet<T>?, TPolicy> Count<T, TPolicy>(
+        this Assertion<HashSet<T>?, TPolicy> assertion,
+        int expected,
+        string? message = null
+    )
+        where TPolicy : struct, IAssertionPolicy
+    {
+        var actual = assertion.Value!.Count;
+
+        if (actual != expected)
+        {
+            assertion.Fail(message ?? $"Expected count '{expected}', but found '{actual}'.");
+        }
+
+        return assertion;
+    }
+
+    /// <summary>
+    ///     Asserts that the set contains exactly the specified number of elements, building the failure message lazily.
+    /// </summary>
+    /// <remarks>
+    ///     <paramref name="messageFactory" /> is required, receives the call-site context, and is invoked only in the failure branch.
+    /// </remarks>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<HashSet<T>?, TPolicy> Count<T, TPolicy>(
+        this Assertion<HashSet<T>?, TPolicy> assertion,
+        int expected,
+        Func<AssertionContext, string> messageFactory
+    )
+        where TPolicy : struct, IAssertionPolicy
+    {
+        var actual = assertion.Value!.Count;
+
+        if (actual != expected)
+        {
+            assertion.Fail(messageFactory(assertion.Context));
+        }
+
+        return assertion;
+    }
+
+/// <summary>
+    ///     Asserts that the set contains at least the specified number of elements.
+    /// </summary>
+    /// <typeparam name="T">The element type.</typeparam>
+    /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
+    /// <param name="assertion">The current assertion.</param>
+    /// <param name="minimum">The minimum permitted number of elements.</param>
+    /// <param name="message">
+    ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
+    /// </param>
+    /// <returns>The original assertion for further chaining or implicit value extraction.</returns>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<HashSet<T>?, TPolicy> MinCount<T, TPolicy>(
+        this Assertion<HashSet<T>?, TPolicy> assertion,
+        int minimum,
+        string? message = null
+    )
+        where TPolicy : struct, IAssertionPolicy {
+        if (assertion.Value!.Count < minimum) {
+            assertion.FailOutOfRange(assertion.Value.Count,
+                                   message ?? $"Collection must contain at least '{minimum}' elements.");
+        }
+
+        return assertion;
+    }
+
+    /// <summary>
+    ///     Asserts that the set contains at most the specified number of elements.
+    /// </summary>
+    /// <typeparam name="T">The element type.</typeparam>
+    /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
+    /// <param name="assertion">The current assertion.</param>
+    /// <param name="maximum">The maximum permitted number of elements.</param>
+    /// <param name="message">
+    ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
+    /// </param>
+    /// <returns>The original assertion for further chaining or implicit value extraction.</returns>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<HashSet<T>?, TPolicy> MaxCount<T, TPolicy>(
+        this Assertion<HashSet<T>?, TPolicy> assertion,
+        int maximum,
+        string? message = null
+    )
+        where TPolicy : struct, IAssertionPolicy {
+        if (assertion.Value!.Count > maximum) {
+            assertion.FailOutOfRange(assertion.Value.Count,
+                                   message ?? $"Collection must contain at most '{maximum}' elements.");
+        }
+
+        return assertion;
+    }
+
+    /// <summary>
+    ///     Asserts that the number of elements lies within the inclusive range
+    ///     <paramref name="minimum" /> through <paramref name="maximum" />.
+    /// </summary>
+    /// <typeparam name="T">The element type.</typeparam>
+    /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
+    /// <param name="assertion">The current assertion.</param>
+    /// <param name="minimum">The minimum permitted number of elements.</param>
+    /// <param name="maximum">The maximum permitted number of elements.</param>
+    /// <param name="message">
+    ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
+    /// </param>
+    /// <returns>The original assertion for further chaining or implicit value extraction.</returns>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<HashSet<T>?, TPolicy> CountInRange<T, TPolicy>(
+        this Assertion<HashSet<T>?, TPolicy> assertion,
+        int minimum,
+        int maximum,
+        string? message = null
+    )
+        where TPolicy : struct, IAssertionPolicy {
+        var actual = assertion.Value!.Count;
+
+        if (actual < minimum || actual > maximum) {
+            assertion.FailOutOfRange(actual,
+                                   message ?? $"Collection count must be in range [{minimum}, {maximum}].");
+        }
+
+        return assertion;
+    }
+
+    /// <summary>
+    ///     Asserts that the sorted set contains at least one element.
+    /// </summary>
+    /// <typeparam name="T">The element type.</typeparam>
+    /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
+    /// <param name="assertion">The current assertion.</param>
+    /// <param name="message">
+    ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
+    /// </param>
+    /// <returns>The original assertion for further chaining or implicit value extraction.</returns>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<SortedSet<T>?, TPolicy> NotEmpty<T, TPolicy>(
+        this Assertion<SortedSet<T>?, TPolicy> assertion,
+        string? message = null
+    )
+        where TPolicy : struct, IAssertionPolicy {
+        if (assertion.Value!.Count == 0)
+            assertion.Fail(message ?? "Collection must not be empty.");
+
+        return assertion;
+    }
+
+    /// <summary>
+    ///     Asserts that the sorted set contains at least one element, building the failure message lazily.
+    /// </summary>
+    /// <remarks>
+    ///     <paramref name="messageFactory" /> is required, receives the call-site context, and is invoked only in the failure branch.
+    /// </remarks>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<SortedSet<T>?, TPolicy> NotEmpty<T, TPolicy>(
+        this Assertion<SortedSet<T>?, TPolicy> assertion,
+        Func<AssertionContext, string> messageFactory
+    )
+        where TPolicy : struct, IAssertionPolicy {
+        if (assertion.Value!.Count == 0)
+            assertion.Fail(messageFactory(assertion.Context));
+
+        return assertion;
+    }
+
+    /// <summary>
+    ///     Asserts that the sorted set contains exactly the specified number of elements.
+    /// </summary>
+    /// <typeparam name="T">The element type.</typeparam>
+    /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
+    /// <param name="assertion">The current assertion.</param>
+    /// <param name="expected">The required number of elements.</param>
+    /// <param name="message">
+    ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
+    /// </param>
+    /// <returns>The original assertion for further chaining or implicit value extraction.</returns>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<SortedSet<T>?, TPolicy> Count<T, TPolicy>(
+        this Assertion<SortedSet<T>?, TPolicy> assertion,
+        int expected,
+        string? message = null
+    )
+        where TPolicy : struct, IAssertionPolicy {
+        var actual = assertion.Value!.Count;
+
+        if (actual != expected) {
+            assertion.Fail(message ?? $"Expected count '{expected}', but found '{actual}'.");
+        }
+
+        return assertion;
+    }
+
+    /// <summary>
+    ///     Asserts that the sorted set contains exactly the specified number of elements, building the failure message lazily.
+    /// </summary>
+    /// <remarks>
+    ///     <paramref name="messageFactory" /> is required, receives the call-site context, and is invoked only in the failure branch.
+    /// </remarks>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<SortedSet<T>?, TPolicy> Count<T, TPolicy>(
+        this Assertion<SortedSet<T>?, TPolicy> assertion,
+        int expected,
+        Func<AssertionContext, string> messageFactory
+    )
+        where TPolicy : struct, IAssertionPolicy {
+        var actual = assertion.Value!.Count;
+
+        if (actual != expected) {
+            assertion.Fail(messageFactory(assertion.Context));
+        }
+
+        return assertion;
+    }
+
+    /// <summary>
+    ///     Asserts that the sorted set contains at least the specified number of elements.
+    /// </summary>
+    /// <typeparam name="T">The element type.</typeparam>
+    /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
+    /// <param name="assertion">The current assertion.</param>
+    /// <param name="minimum">The minimum permitted number of elements.</param>
+    /// <param name="message">
+    ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
+    /// </param>
+    /// <returns>The original assertion for further chaining or implicit value extraction.</returns>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<SortedSet<T>?, TPolicy> MinCount<T, TPolicy>(
+        this Assertion<SortedSet<T>?, TPolicy> assertion,
+        int minimum,
+        string? message = null
+    )
+        where TPolicy : struct, IAssertionPolicy {
+        if (assertion.Value!.Count < minimum) {
+            assertion.FailOutOfRange(assertion.Value.Count,
+                                   message ?? $"Collection must contain at least '{minimum}' elements.");
+        }
+
+        return assertion;
+    }
+
+    /// <summary>
+    ///     Asserts that the sorted set contains at most the specified number of elements.
+    /// </summary>
+    /// <typeparam name="T">The element type.</typeparam>
+    /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
+    /// <param name="assertion">The current assertion.</param>
+    /// <param name="maximum">The maximum permitted number of elements.</param>
+    /// <param name="message">
+    ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
+    /// </param>
+    /// <returns>The original assertion for further chaining or implicit value extraction.</returns>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<SortedSet<T>?, TPolicy> MaxCount<T, TPolicy>(
+        this Assertion<SortedSet<T>?, TPolicy> assertion,
+        int maximum,
+        string? message = null
+    )
+        where TPolicy : struct, IAssertionPolicy {
+        if (assertion.Value!.Count > maximum) {
+            assertion.FailOutOfRange(assertion.Value.Count,
+                                   message ?? $"Collection must contain at most '{maximum}' elements.");
+        }
+
+        return assertion;
+    }
+
+    /// <summary>
+    ///     Asserts that the number of elements in the sorted set lies within the inclusive range
+    ///     <paramref name="minimum" /> through <paramref name="maximum" />.
+    /// </summary>
+    /// <typeparam name="T">The element type.</typeparam>
+    /// <typeparam name="TPolicy">The assertion failure policy.</typeparam>
+    /// <param name="assertion">The current assertion.</param>
+    /// <param name="minimum">The minimum permitted number of elements.</param>
+    /// <param name="maximum">The maximum permitted number of elements.</param>
+    /// <param name="message">
+    ///     An optional custom failure message. When <see langword="null" />, the default assertion message is used.
+    /// </param>
+    /// <returns>The original assertion for further chaining or implicit value extraction.</returns>
+    [DebuggerStepThrough]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Assertion<SortedSet<T>?, TPolicy> CountInRange<T, TPolicy>(
+        this Assertion<SortedSet<T>?, TPolicy> assertion,
+        int minimum,
+        int maximum,
+        string? message = null
+    )
+        where TPolicy : struct, IAssertionPolicy {
+        var actual = assertion.Value!.Count;
+
+        if (actual < minimum || actual > maximum) {
+            assertion.FailOutOfRange(actual,
+                                   message ?? $"Collection count must be in range [{minimum}, {maximum}].");
+        }
 
         return assertion;
     }

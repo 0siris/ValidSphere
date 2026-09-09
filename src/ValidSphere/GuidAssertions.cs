@@ -76,10 +76,11 @@ public static class GuidAssertions {
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Guid AsGuid<TPolicy>(
-        this Assertion<string, TPolicy> assertion,
+        this Assertion<string?, TPolicy> assertion,
         string? message = null
     )
-        where TPolicy : struct, IAssertionPolicy {
+        where TPolicy : struct, IAssertionPolicy
+    {
         var value = assertion.Value;
 
         if (value is null)
@@ -107,7 +108,7 @@ public static class GuidAssertions {
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Assertion<Guid, TPolicy> Guid<TPolicy>(
-        this Assertion<string, TPolicy> assertion,
+        this Assertion<string?, TPolicy> assertion,
         string? message = null
     )
         where TPolicy : struct, IAssertionPolicy {
