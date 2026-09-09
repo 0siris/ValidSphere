@@ -43,7 +43,8 @@ This keeps validation rules reusable while preserving the correct failure semant
   - [Strings](#strings)
   - [GUIDs](#guids)
   - [Collections](#collections)
-  - [Paths, URIs, and Mail Addresses](#paths-uris-and-mail-addresses)
+  - [Paths, URIs, Mail Addresses, and GUIDs](#paths-uris-mail-addresses-and-guids)
+  - [Enums](#enums)
   - [Runtime Type Assertions](#runtime-type-assertions)
   - [Optional Failure Messages](#optional-failure-messages)
 - [Diagnostics and Testing](#diagnostics-and-testing)
@@ -61,6 +62,7 @@ This keeps validation rules reusable while preserving the correct failure semant
   - [Example: Domain-Specific Extension](#example-domain-specific-extension)
   - [Example: Refining the Assertion Type](#example-refining-the-assertion-type)
   - [Extension Design Guidelines](#extension-design-guidelines)
+  - [Custom Exceptions](#custom-exceptions)
 - [Appendix](#appendix)
   - [Performance Model](#performance-model)
   - [Choosing Between Specialized Assertions and `Satisfy()`](#choosing-between-specialized-assertions-and-satisfy)
@@ -326,6 +328,19 @@ value.Is()
 
 No `And` property is required because every assertion directly returns an assertion that can be continued.
 
+### Chain entries vs. terminal extractors
+
+Methods named `X()` return the chainable assertion; methods named `AsX()` validate and extract the raw value terminally:
+
+```csharp
+trackingId.Is().Guid().NotEmpty();   // Assertion<Guid, IsPolicy> — chainable
+Guid g = trackingId.Is().AsGuid();   // Guid — terminal
+string v = name.AsNotNullOrWhiteSpace();  // string — terminal
+Color c = "Red".Is().AsEnum<Color>();     // Color — terminal
+```
+
+Terminal forms still fail through the selected policy (or a configured `OnFailure` factory); they just do not return an assertion.
+
 ---
 
 ## Using the Asserted Value
@@ -426,9 +441,9 @@ isSupported.Guard().True("The requested operation is not supported.");
 Use the Boolean overload for an arbitrary condition that is already available at the call site:
 
 ```csharp
-facet.Is().Satisfy(
-    facet.loops.Count == 0 ||
-    facet.loops[^1] <= facet.outputVertexNos.Count);
+facet.Is()
+      .Satisfy( facet.loops.Count == 0 ||
+                facet.loops[^1] <= facet.outputVertexNos.Count);
 ```
 
 The condition expression is captured by the compiler through `CallerArgumentExpression`, so a failure can report the original expression.
@@ -582,6 +597,13 @@ They can also be used directly inside expressions:
 Process(name.AsGuardNotNull());
 ```
 
+Terminal forms return the validated value directly:
+
+```csharp
+string v = name.AsNotNullOrWhiteSpace();
+string w = name.AsNotEmpty();
+```
+
 Use the direct variants when the nullable state of the **original variable** matters after the call.
 
 Use the fluent `Is().NotNull()` or `Guard().NotNull()` form when the refined assertion value is consumed directly or when the null check is naturally part of a chain.
@@ -699,10 +721,10 @@ name.Guard().NotNullOrEmpty();
 
 ## GUIDs
 
-The current GUID-specific API uses `NotBeEmpty()`:
+The current GUID-specific API uses `NotEmpty()`:
 
 ```csharp
-id.Guard().NotBeEmpty();
+id.Guard().NotEmpty();
 ```
 
 For nullable GUIDs:
@@ -710,7 +732,7 @@ For nullable GUIDs:
 ```csharp
 Guid? id = GetId();
 
-id.Is().NotBeNullOrEmpty();
+id.Is().NotNullOrEmpty();
 ```
 
 The nullable form refines the assertion to:
@@ -732,13 +754,13 @@ items.Is().NotEmpty();
 Require an exact count:
 
 ```csharp
-items.Is().HaveCount(3);
+items.Is().Count(3);
 ```
 
 Arrays additionally support exact length checks:
 
 ```csharp
-buffer.Is().HaveLength(1024);
+buffer.Is().Length(1024);
 ```
 
 The built-in collection assertions operate on `ICollection` or arrays and use `Count`/`Length` directly.
@@ -758,6 +780,18 @@ mail.Is().MailAddress().HaveHost("contoso.com");
 ```
 
 `File()`/`Directory()` refine to `FilePath`/`DirectoryPath`, which also forward a curated set of members to `System.IO.File`/`Directory`, so asserting and working share one chain (`file.ReadAllText()`, `dir.GetFiles()`).
+
+## Enums
+
+```csharp
+color.Is().Defined();
+perms.Is().Flagged(Perm.Read);
+Color c = "Red".Is().AsEnum<Color>();
+"Red".Is().Enum<Color>().Defined();
+Color d = 2.Is().AsEnum<Color>();
+```
+
+`Defined()` checks named/integer definedness, `Flagged()` a plain bit test (no `[Flags]` requirement). `Enum<T>()`/`AsEnum<T>()` exist for `string` (with `ignoreCase`, shape check only) and `int`; the int pair always requires a defined value. Guard side: `GuardEnum<T>()`/`AsGuardEnum<T>()` (a `TPolicy`-generic `.Enum<Color>()` cannot compile — partial type arguments are illegal).
 
 ## Runtime Type Assertions
 
@@ -939,8 +973,12 @@ A test can therefore use the normal `Is()` entry point:
 public void Result_is_valid()
 {
     var result = Calculate();
-
     result.Is().Eq(42);
+    
+    //or
+    result = Calculate().Is().Eq(42)
+                        .Value;
+    
 }
 ```
 
@@ -1006,7 +1044,10 @@ It contains:
 ```text
 subject
 AssertionContext
+exceptionFactory (private OnFailure override)
 ```
+
+The public 2-arg ctor leaves the factory empty; refinements must use `assertion.Refine(value)`.
 
 and exposes:
 
@@ -1022,12 +1063,10 @@ It also supports implicit conversion back to `T`:
 Process(value.Guard().Greater(0));
 ```
 
-Its public constructor forms the minimal extension surface for type-refining custom assertions:
+Its public constructor forms the minimal extension surface for type-refining custom assertions. Prefer `assertion.Refine(refinedValue)`, which additionally preserves a configured `OnFailure` factory:
 
 ```csharp
-new Assertion<TRefined, TPolicy>(
-    refinedValue,
-    assertion.Context);
+return assertion.Refine(refinedValue);
 ```
 
 No builder object or policy instance is required.
@@ -1041,6 +1080,11 @@ No builder object or policy instance is required.
 ```csharp
 public readonly struct AssertionContext
 {
+    public AssertionContext(
+        string? expression,
+        string? memberName,
+        string? filePath,
+        int lineNumber);
     public string? Expression { get; }
     public string? MemberName { get; }
     public string? FilePath { get; }
@@ -1065,16 +1109,21 @@ IAssertionPolicy
 The policy interface distinguishes three failure categories:
 
 ```csharp
+using System.Diagnostics.CodeAnalysis;
+
 public interface IAssertionPolicy
 {
+    [DoesNotReturn]
     static abstract void Fail(
         AssertionContext context,
         string message);
 
+    [DoesNotReturn]
     static abstract void FailNull(
         AssertionContext context,
         string message);
 
+    [DoesNotReturn]
     static abstract void FailOutOfRange<T>(
         AssertionContext context,
         T actualValue,
@@ -1117,6 +1166,9 @@ Because policy methods are static abstract members and policies are value types,
 Create a custom policy when the **failure semantics** need to change.
 
 Examples include domain-specific exceptions, protocol validation, parser failures, or integration with another test framework.
+
+The snippets below assume `using System.Diagnostics;`, `using System.Runtime.CompilerServices;`, and a project-defined exception type.
+
 
 ```csharp
 public readonly struct DomainPolicy : IAssertionPolicy
@@ -1251,8 +1303,7 @@ public static class PercentageAssertions
 
         if (value.Value is < 0 or > 100)
         {
-            TPolicy.FailOutOfRange(
-                assertion.Context,
+            assertion.FailOutOfRange(
                 value,
                 message ?? "Percentage must be in range [0, 100].");
         }
@@ -1292,9 +1343,7 @@ public static Assertion<T, TPolicy> MyAssertion<T, TPolicy>(
 {
     if (/* invalid */)
     {
-        TPolicy.Fail(
-            assertion.Context,
-            message ?? "Failure message.");
+        assertion.Fail( message ?? "Failure message.");
     }
 
     return assertion;
@@ -1318,7 +1367,7 @@ public static Assertion<MyType, TPolicy> Valid<TPolicy>(
     this Assertion<MyType, TPolicy> assertion)
     where TPolicy : struct, IAssertionPolicy
 {
-    assertion.Value.Is().Satisfy(...);
+    assertion.Value.Is().Satisfy(static v => v.IsValid);
 
     return assertion;
 }
@@ -1326,7 +1375,7 @@ public static Assertion<MyType, TPolicy> Valid<TPolicy>(
 
 That would create a new `IsPolicy` assertion and discard the original policy/context semantics.
 
-Instead, evaluate the rule directly and invoke `TPolicy`.
+Instead, evaluate the rule directly and invoke `assertion.Fail*(...)`, which honors `OnFailure`.
 
 ---
 
@@ -1340,7 +1389,7 @@ public static class MeshAssertions
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Assertion<Mesh, TPolicy> HaveVertices<TPolicy>(
+    public static Assertion<Mesh, TPolicy> HasVertices<TPolicy>(
         this Assertion<Mesh, TPolicy> assertion,
         string? message = null)
         where TPolicy : struct, IAssertionPolicy
@@ -1349,9 +1398,7 @@ public static class MeshAssertions
 
         if (mesh.Vertices.Count == 0)
         {
-            TPolicy.Fail(
-                assertion.Context,
-                message ?? "Mesh must contain at least one vertex.");
+            assertion.Fail( message ?? "Mesh must contain at least one vertex.");
         }
 
         return assertion;
@@ -1362,7 +1409,7 @@ public static class MeshAssertions
 It can now be used as a runtime assertion:
 
 ```csharp
-mesh.Is().HaveVertices();
+mesh.Is().HasVertices();
 ```
 
 or as a guard:
@@ -1370,7 +1417,7 @@ or as a guard:
 ```csharp
 public void Process(Mesh mesh)
 {
-    mesh.Guard().HaveVertices();
+    mesh.Guard().HasVertices();
 
     // ...
 }
@@ -1404,18 +1451,16 @@ public static Assertion<Dog, TPolicy> Dog<TPolicy>(
     string? message = null)
     where TPolicy : struct, IAssertionPolicy
 {
-    if (assertion.Value is not Dog dog)
-    {
-        TPolicy.Fail(
-            assertion.Context,
-            message ?? "Animal must be a dog.");
-    }
+    if (assertion.Value is Dog dog)
+        return assertion.Refine(dog);
 
-    return new Assertion<Dog, TPolicy>(
-        dog,
-        assertion.Context);
+    assertion.Fail( message ?? "Animal must be a dog.");
+
+    return default;
 }
 ```
+
+`Refine()` preserves the assertion context, the policy, and a configured `OnFailure` factory.
 
 This enables:
 
@@ -1501,7 +1546,7 @@ assertion.Context
 Use:
 
 ```csharp
-TPolicy.Fail(...)
+assertion.Fail(...)
 ```
 
 for general failures.
@@ -1509,7 +1554,7 @@ for general failures.
 Use:
 
 ```csharp
-TPolicy.FailNull(...)
+assertion.FailNull(...)
 ```
 
 when the failure specifically means that a value must not be null.
@@ -1517,7 +1562,7 @@ when the failure specifically means that a value must not be null.
 Use:
 
 ```csharp
-TPolicy.FailOutOfRange(...)
+assertion.FailOutOfRange(...)
 ```
 
 for comparison or range violations.
@@ -1577,10 +1622,10 @@ value.Is()
 
 The factory receives an AssertionFailure containing:
 
-- failure kind
+- failure kind (`General`, `Null`, `OutOfRange`)
 - message
 - assertion context
-- actual value where applicable
+- actual value (populated only on the `OutOfRange` path)
 
 Without OnFailure(), the normal assertion policy remains responsible for the exception type.
 
@@ -1762,11 +1807,12 @@ Create a custom policy only when the **failure semantics** need to change.
 | Collections | `NotEmpty()`, `Count()`, `Length()`, `MinCount()`, `MaxCount()`, `CountInRange()`, `MinLength()`, `MaxLength()`, `LengthInRange()`, `Contains()` |
 | Dictionaries | `ContainsKey()`, `NotContainsKey()` |
 | Date and time | `Kind()`, `Utc()`, `After()`, `Before()`, `NotBefore()`, `NotAfter()` (DateTime); `Positive()`, `NonNegative()`, `Zero()`, `WithinTimeout()` (TimeSpan); `Today()`, `Weekday()` (DateOnly); `Utc()`, `HaveOffset()` (DateTimeOffset) |
-| GUID | `NotBeEmpty()`, `NotBeNullOrEmpty()` |
+| GUID | `Guid()`, `AsGuid()`, `NotEmpty()`, `NotNullOrEmpty()` |
 | Characters | `IsLetter()`, `IsDigit()`, `IsWhiteSpace()`, `IsUpper()`, `IsLower()` |
-| Paths | `AsFile()`, `AsDirectory()`, `Exists()`, `NotExists()`, `HaveExtension()`, `NoExtension()`, `HaveFileName()`, `HaveName()`, `Absolute()`, `HaveFullPath()`, `InDirectory()`, `Empty()`, `NotEmpty()`, `Length()`, `MinLength()`, `MaxLength()`, `LengthInRange()`, `ContainsFile()`, `ContainsDirectory()` |
-| URIs | `AsUri()`, `Absolute()`, `HaveScheme()`, `HaveHost()`, `HavePort()`, `Loopback()` |
-| Network | `Loopback()`, `IPv4()`, `IPv6()` (IPAddress); `HavePort()`, `Loopback()` (IPEndPoint); `AsMailAddress()`, `HaveHost()`, `HaveUser()` (MailAddress) |
+| Paths | `AsFile()`, `AsDirectory()`, `File()`, `Directory()`, `Exists()`, `NotExists()`, `HaveExtension()`, `NoExtension()`, `HaveFileName()`, `HaveName()`, `Absolute()`, `HaveFullPath()`, `InDirectory()`, `Empty()`, `NotEmpty()`, `Length()`, `MinLength()`, `MaxLength()`, `LengthInRange()`, `ContainsFile()`, `ContainsDirectory()` |
+| URIs | `AsUri()`, `Uri()`, `Absolute()`, `HaveScheme()`, `HaveHost()`, `HavePort()`, `Loopback()` |
+| Network | `Loopback()`, `IPv4()`, `IPv6()` (IPAddress); `HavePort()`, `Loopback()` (IPEndPoint); `AsMailAddress()`, `MailAddress()`, `HaveHost()`, `HaveUser()` (MailAddress) |
+| Enums | `Defined()`, `Flagged()`, `Enum()`, `AsEnum()`, `GuardEnum()`, `AsGuardEnum()` |
 | Runtime type | `OfType<T>()` |
 
 All assertion methods support the selected `TPolicy`, so the same rule can normally be used through `Is()`, `Guard()`, or a custom policy entry point.

@@ -64,7 +64,7 @@ public readonly struct Assertion<T, TPolicy>
     }
 
     /// <summary>
-    ///     Gets the compiler-provided call-site context captured by <c>Should()</c> or <c>Guard()</c>.
+    ///     Gets the compiler-provided call-site context captured by <c>Is()</c> or <c>Guard()</c>.
     /// </summary>
     public AssertionContext Context {
         [DebuggerStepThrough]
@@ -109,7 +109,7 @@ public readonly struct Assertion<T, TPolicy>
     /// <returns>The asserted value.</returns>
     /// <remarks>
     ///     This allows assertions to be embedded directly into expressions, for example:
-    ///     <c>Use(value.Guard().BeGreaterThan(0))</c>.
+    ///     <c>Use(value.Guard().Greater(0))</c>.
     /// </remarks>
     [DebuggerStepThrough]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -146,11 +146,14 @@ public readonly struct Assertion<T, TPolicy>
     ///     Reports a general assertion failure, honoring the custom exception factory when present.
     /// </summary>
     /// <param name="message">The failure message.</param>
+    /// <remarks>
+    ///     Custom assertion extensions call this helper instead of <c>TPolicy</c> directly so <c>OnFailure</c> is preserved.
+    /// </remarks>
     [DoesNotReturn]
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.NoInlining)]
-    internal void Fail(string message) {
+    public void Fail(string message) {
         if (exceptionFactory is not null) {
             throw exceptionFactory(new AssertionFailure(AssertionFailureKind.General, message, context));
         }
@@ -162,11 +165,14 @@ public readonly struct Assertion<T, TPolicy>
     ///     Reports an unexpected null, honoring the custom exception factory when present.
     /// </summary>
     /// <param name="message">The failure message.</param>
+    /// <remarks>
+    ///     Custom assertion extensions call this helper instead of <c>TPolicy</c> directly so <c>OnFailure</c> is preserved.
+    /// </remarks>
     [DoesNotReturn]
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.NoInlining)]
-    internal void FailNull(string message) {
+    public void FailNull(string message) {
         if (exceptionFactory is not null) {
             throw exceptionFactory(new AssertionFailure(AssertionFailureKind.Null, message, context));
         }
@@ -180,11 +186,14 @@ public readonly struct Assertion<T, TPolicy>
     /// <typeparam name="TActual">The type of the offending value.</typeparam>
     /// <param name="actualValue">The value that violated the range constraint.</param>
     /// <param name="message">The failure message.</param>
+    /// <remarks>
+    ///     Custom assertion extensions call this helper instead of <c>TPolicy</c> directly so <c>OnFailure</c> is preserved.
+    /// </remarks>
     [DoesNotReturn]
     [DebuggerStepThrough]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.NoInlining)]
-    internal void FailOutOfRange<TActual>(TActual actualValue, string message) {
+    public void FailOutOfRange<TActual>(TActual actualValue, string message) {
         if (exceptionFactory is not null) {
             throw exceptionFactory(new AssertionFailure(AssertionFailureKind.OutOfRange, message, context, actualValue));
         }
@@ -286,7 +295,7 @@ public static class AssertionEntryExtensions {
     ///     <paramref name="subject"/> is <see langword="null" />.
     /// </exception>
     /// <remarks>
-    ///     Unlike <c>Should().NotBeNull()</c>, this direct assertion participates in nullable
+    ///     Unlike <c>Is().NotNull()</c>, this direct assertion participates in nullable
     ///     flow analysis through <see cref="NotNullAttribute"/> and therefore refines the
     ///     original reference to non-null after a successful call.
     /// </remarks>
@@ -398,7 +407,7 @@ public static class AssertionEntryExtensions {
     ///     <paramref name="subject"/> is <see langword="null" />.
     /// </exception>
     /// <remarks>
-    ///     This is the flow-analysis-aware counterpart to <c>Guard().NotBeNull()</c>.
+    ///     This is the flow-analysis-aware counterpart to <c>Guard().NotNull()</c>.
     ///     The <see cref="NotNullAttribute"/> informs nullable flow analysis that
     ///     <paramref name="subject"/> is non-null after a successful call.
     /// </remarks>

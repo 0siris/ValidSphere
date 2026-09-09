@@ -19,7 +19,7 @@ public sealed class EnumTests {
     }
 
     [Fact]
-    public void HaveFlag_checks_flag() {
+    public void Flagged_checks_flag() {
         (Perm.Read | Perm.Write).Is().Flagged(Perm.Read);
     }
 

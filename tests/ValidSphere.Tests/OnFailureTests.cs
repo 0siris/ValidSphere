@@ -100,4 +100,11 @@ public sealed class OnFailureTests {
         5.Is().OnFailure(_ => { invoked = true; return new DomainException(); }).Greater(0).Less(100);
         Assert.False(invoked);
     }
+
+    [Fact]
+    public void Public_fail_helpers_throw_policy_exception() {
+        Assert.Throws<AssertException>(() => { 5.Is().Fail("x"); });
+        Assert.Throws<AssertException>(() => { 5.Is().FailNull("x"); });
+        Assert.Throws<AssertException>(() => { 5.Is().FailOutOfRange(5, "x"); });
+    }
 }
