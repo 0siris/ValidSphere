@@ -133,7 +133,7 @@ ValidSphere is not a DTO or object validation framework, a replacement for Fluen
 ## Installation
 
 ```bash
-dotnet add package ValidSphere --prerelease
+dotnet add package ValidSphere --version 1.0.0
 ```
 
 The package targets `net10.0`, `net8.0` (identical API) and `netstandard2.1` (without generic-math comparisons, numeric, floating-point, and date-only checks).
